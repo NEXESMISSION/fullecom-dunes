@@ -11,7 +11,6 @@ import { Product, ProductOptions, FormField } from '@/types'
 import { supabase } from '@/lib/supabase'
 import { DynamicProductForm, validateProductOptions } from '@/components/DynamicFormField'
 import toast from 'react-hot-toast'
-import FloatingCart from '@/components/FloatingCart'
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -125,7 +124,6 @@ export default function ProductDetailPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <FloatingCart />
       <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Link */}
         <Link

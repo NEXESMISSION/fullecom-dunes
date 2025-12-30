@@ -7,7 +7,6 @@ import { ProductGridSkeleton } from '@/components/ProductSkeleton'
 import Footer from '@/components/Footer'
 import { Product } from '@/types'
 import { supabase } from '@/lib/supabase'
-import FloatingCart from '@/components/FloatingCart'
 
 interface ProductType {
   id: string
@@ -60,20 +59,19 @@ export default function ProductsPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <FloatingCart />
-      <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex-1 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">جميع المنتجات</h1>
-          <p className="text-gray-500 mt-1">تصفح مجموعتنا من المنتجات عالية الجودة</p>
+        <div className="mb-4 sm:mb-8">
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-900">جميع المنتجات</h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">تصفح مجموعتنا من المنتجات</p>
         </div>
 
         {/* Search and Filters */}
-        <div className="mb-8 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
+        <div className="mb-4 sm:mb-8 space-y-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             {/* Search */}
             <div className="relative flex-1">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="ابحث عن منتجات..."
@@ -88,17 +86,17 @@ export default function ProductsPage() {
               onClick={() => setShowFilters(!showFilters)}
               className="sm:hidden btn-secondary flex items-center justify-center gap-2"
             >
-              <SlidersHorizontal className="h-5 w-5" />
+              <SlidersHorizontal className="h-4 w-4" />
               فلترة
             </button>
           </div>
 
           {/* Type Filters */}
           <div className={`${showFilters ? 'block' : 'hidden'} sm:block`}>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               <button
                 onClick={() => setSelectedType('الكل')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                className={`px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors ${
                   selectedType === 'الكل'
                     ? 'bg-primary-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -110,7 +108,7 @@ export default function ProductsPage() {
                 <button
                   key={type.id}
                   onClick={() => setSelectedType(type.name)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  className={`px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors ${
                     selectedType === type.name
                       ? 'bg-primary-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -147,7 +145,7 @@ export default function ProductsPage() {
         </div>
 
         {/* Results Count */}
-        <p className="text-gray-500 mb-4">
+        <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
           {loading ? 'جاري التحميل...' : `${filteredProducts.length} منتج`}
         </p>
 
@@ -155,7 +153,7 @@ export default function ProductsPage() {
         {loading ? (
           <ProductGridSkeleton count={12} />
         ) : filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-6">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

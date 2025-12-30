@@ -8,7 +8,6 @@ import { ProductGridSkeleton } from '@/components/ProductSkeleton'
 import Footer from '@/components/Footer'
 import { Product } from '@/types'
 import { supabase } from '@/lib/supabase'
-import FloatingCart from '@/components/FloatingCart'
 
 const features = [
   {
@@ -62,15 +61,14 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <FloatingCart />
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary-600 to-primary-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-24">
           <div className="max-w-2xl">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-4">
               تسوق منتجات عالية الجودة
             </h1>
-            <p className="text-lg md:text-xl text-primary-100 mb-8">
+            <p className="text-sm sm:text-base md:text-lg text-primary-100 mb-6">
               اكتشف منتجات مميزة مع توصيل مجاني. ادفع فقط عند استلام طلبك - لا يتطلب دفع مسبق.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -85,14 +83,14 @@ export default function HomePage() {
       </section>
 
       {/* Features */}
-      <section className="py-12 bg-white">
+      <section className="py-6 sm:py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
             {features.map((feature) => (
-              <div key={feature.title} className="text-center p-4">
-                <feature.icon className="h-10 w-10 mx-auto text-primary-600 mb-3" />
-                <h3 className="font-semibold text-gray-900">{feature.title}</h3>
-                <p className="text-sm text-gray-500">{feature.description}</p>
+              <div key={feature.title} className="text-center p-2 sm:p-4">
+                <feature.icon className="h-6 w-6 sm:h-10 sm:w-10 mx-auto text-primary-600 mb-2" />
+                <h3 className="text-xs sm:text-sm font-semibold text-gray-900">{feature.title}</h3>
+                <p className="text-xs text-gray-500 hidden sm:block">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -100,12 +98,12 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-16 flex-1">
+      <section className="py-8 sm:py-16 flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Featured Products</h2>
-              <p className="text-gray-500 mt-1">Check out our latest arrivals</p>
+              <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-900">منتجات مميزة</h2>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">اكتشف أحدث المنتجات</p>
             </div>
             <Link
               href="/products"
@@ -119,7 +117,7 @@ export default function HomePage() {
           {loading ? (
             <ProductGridSkeleton count={8} />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
               {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -135,11 +133,11 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gray-900 text-white py-16">
+      <section className="bg-gray-900 text-white py-8 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to Start Shopping?</h2>
-          <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
-            No account needed. Just add products to your cart and pay when you receive them.
+          <h2 className="text-lg sm:text-2xl md:text-3xl font-bold mb-3">هل أنت مستعد للتسوق؟</h2>
+          <p className="text-gray-400 mb-6 text-sm sm:text-base max-w-2xl mx-auto">
+            لا تحتاج حساب. أضف المنتجات وادفع عند الاستلام.
           </p>
           <Link href="/products" className="btn-primary inline-block">
             Browse Products

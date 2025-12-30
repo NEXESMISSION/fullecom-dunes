@@ -35,12 +35,12 @@ export default function ProductCard({ product }: ProductCardProps) {
           alt={product.name}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-300"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
         {product.stock <= 0 && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-              نفذ من المخزون
+            <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-medium">
+              نفذ
             </span>
           </div>
         )}
@@ -48,19 +48,19 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={handleAddToCart}
             disabled={product.stock <= 0}
-            className="p-3 bg-white rounded-full shadow-lg hover:bg-primary-600 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 sm:p-3 bg-white rounded-full shadow-lg hover:bg-primary-600 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="أضف إلى السلة"
           >
-            <ShoppingCart className="h-5 w-5" />
+            <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         </div>
       </div>
-      <div className="p-4">
-        <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{productType}</p>
-        <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors truncate">
+      <div className="p-2 sm:p-4">
+        <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-0.5">{productType}</p>
+        <h3 className="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors truncate">
           {product.name}
         </h3>
-        <p className="text-lg font-bold text-primary-600 mt-2">{product.price.toFixed(2)} د.ت</p>
+        <p className="text-sm sm:text-lg font-bold text-primary-600 mt-1">{product.price.toFixed(2)} د.ت</p>
       </div>
     </Link>
   )

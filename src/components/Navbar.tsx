@@ -1,14 +1,26 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ShoppingCart, Menu, X, Store } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [badgeAnimate, setBadgeAnimate] = useState(false)
   const { getCartCount, setIsCartOpen } = useCart()
   const cartCount = getCartCount()
+  const prevCountRef = useRef(cartCount)
+
+  // Animate badge when cart count increases
+  useEffect(() => {
+    if (cartCount > prevCountRef.current) {
+      setBadgeAnimate(true)
+      const timer = setTimeout(() => setBadgeAnimate(false), 600)
+      return () => clearTimeout(timer)
+    }
+    prevCountRef.current = cartCount
+  }, [cartCount])
 
   const navLinks = [
     { href: '/', label: 'الرئيسية' },
@@ -46,9 +58,13 @@ export default function Navbar() {
               className="relative p-2 text-gray-600 hover:text-primary-600 transition-colors"
               aria-label="فتح السلة"
             >
-              <ShoppingCart className="h-6 w-6" />
+              <ShoppingCart className={`h-6 w-6 transition-transform ${badgeAnimate ? 'scale-110' : ''}`} />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                <span className={`absolute -top-1 -right-1 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center transition-all duration-300 ${
+                  badgeAnimate 
+                    ? 'bg-green-500 scale-125 animate-pulse' 
+                    : 'bg-primary-600'
+                }`}>
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
               )}

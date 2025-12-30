@@ -82,12 +82,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       
       return [...currentItems, { ...item, options, quantity, optionsKey }]
     })
-    toast.success('تمت الإضافة إلى السلة')
+    // Badge indicator on cart icon shows feedback - no popup needed
   }, [])
 
   const removeFromCart = useCallback((optionsKey: string) => {
     setItems(currentItems => currentItems.filter(i => i.optionsKey !== optionsKey))
-    toast.success('تمت الإزالة من السلة')
   }, [])
 
   const updateQuantity = useCallback((optionsKey: string, quantity: number) => {
