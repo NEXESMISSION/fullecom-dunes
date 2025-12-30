@@ -14,7 +14,7 @@ import toast from 'react-hot-toast'
 
 export default function ProductDetailPage() {
   const params = useParams()
-  const { addToCart, setIsCartOpen } = useCart()
+  const { addToCart } = useCart()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
@@ -82,11 +82,11 @@ export default function ProductDetailPage() {
       image: product.image,
       options: productOptions,
     }, quantity)
-    setIsCartOpen(true)
     
     // Reset options after adding
     setProductOptions({})
     setOptionErrors({})
+    setQuantity(1)
   }
 
   const isAddToCartDisabled = product?.stock === 0

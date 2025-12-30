@@ -29,6 +29,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { items, getCartTotal, clearCart } = useCart()
   const [loading, setLoading] = useState(false)
+  const [orderSuccess, setOrderSuccess] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     customer_name: '',
     phone: '',
@@ -108,7 +109,8 @@ export default function CheckoutPage() {
 
       if (itemsError) throw itemsError
 
-      // Clear cart and redirect
+      // Mark success before clearing cart to prevent showing empty cart message
+      setOrderSuccess(true)
       clearCart()
       router.push(`/success?order=${order.id}`)
     } catch (error) {
@@ -125,6 +127,16 @@ export default function CheckoutPage() {
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }))
     }
+  }
+
+  // Show loading/redirect state after successful order
+  if (orderSuccess) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">جاري تحويلك...</p>
+      </div>
+    )
   }
 
   if (items.length === 0) {
