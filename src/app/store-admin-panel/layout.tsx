@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: '/store-admin-panel/orders', label: 'الطلبات', icon: '📦' },
   { href: '/store-admin-panel/products', label: 'المنتجات', icon: '🛍️' },
   { href: '/store-admin-panel/product-types', label: 'أنواع المنتجات', icon: '📋' },
+  { href: '/store-admin-panel/settings', label: 'الإعدادات', icon: '⚙️' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
