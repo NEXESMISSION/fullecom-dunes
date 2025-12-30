@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, Minus, Plus, ShoppingCart, Truck, Shield } from 'lucide-react'
+import { ArrowLeft, Minus, Plus, ShoppingCart, Shield } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import Footer from '@/components/Footer'
 import { Product, ProductOptions, FormField } from '@/types'
@@ -222,11 +222,7 @@ export default function ProductDetailPage() {
             </button>
 
             {/* Features */}
-            <div className="border-t pt-6 space-y-4">
-              <div className="flex items-center gap-3 text-gray-600">
-                <Truck className="h-5 w-5 text-primary-600" />
-                <span>توصيل مجاني للطلبات فوق 50 د.ت</span>
-              </div>
+            <div className="border-t pt-6">
               <div className="flex items-center gap-3 text-gray-600">
                 <Shield className="h-5 w-5 text-primary-600" />
                 <span>الدفع عند الاستلام - لا يتطلب دفع مسبق</span>

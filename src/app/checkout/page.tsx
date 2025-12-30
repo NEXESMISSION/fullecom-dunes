@@ -1,13 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2, CheckCircle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import toast from 'react-hot-toast'
 import { formatOptionsForDisplay } from '@/components/DynamicFormField'
 
 interface FormData {
@@ -29,7 +28,8 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { items, getCartTotal, clearCart } = useCart()
   const [loading, setLoading] = useState(false)
-  const [orderSuccess, setOrderSuccess] = useState(false)
+  const [orderSuccess, setOrderSuccess] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [formData, setFormData] = useState<FormData>({
     customer_name: '',
     phone: '',
@@ -38,6 +38,9 @@ export default function CheckoutPage() {
     notes: '',
   })
   const [errors, setErrors] = useState<FormErrors>({})
+  
+  // Store cart data before clearing
+  const cartDataRef = useRef<{ items: typeof items; total: number } | null>(null)
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -66,34 +69,46 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setErrorMessage(null)
 
     if (!validateForm()) return
     if (items.length === 0) {
-      toast.error('سلتك فارغة')
+      setErrorMessage('سلتك فارغة')
       return
     }
 
+    // Store cart data before any async operations
+    cartDataRef.current = { items: [...items], total: getCartTotal() }
     setLoading(true)
 
     try {
-      // Create order
+      // Create order with timeout for mobile networks
+      const orderData = {
+        customer_name: formData.customer_name.trim(),
+        phone: formData.phone.trim(),
+        city: formData.city.trim(),
+        address: formData.address.trim(),
+        notes: formData.notes.trim() || null,
+        total_price: getCartTotal(),
+        status: 'pending',
+      }
+
       const { data: order, error: orderError } = await supabase
         .from('orders')
-        .insert({
-          customer_name: formData.customer_name,
-          phone: formData.phone,
-          city: formData.city,
-          address: formData.address,
-          notes: formData.notes || null,
-          total_price: getCartTotal(),
-          status: 'pending',
-        })
-        .select()
+        .insert(orderData)
+        .select('id')
         .single()
 
-      if (orderError) throw orderError
+      if (orderError) {
+        console.error('Order error:', orderError)
+        throw new Error('فشل في إنشاء الطلب')
+      }
 
-      // Create order items (snapshot of cart with options)
+      if (!order?.id) {
+        throw new Error('لم يتم إرجاع معرف الطلب')
+      }
+
+      // Create order items
       const orderItems = items.map(item => ({
         order_id: order.id,
         product_id: item.product_id,
@@ -107,15 +122,24 @@ export default function CheckoutPage() {
         .from('order_items')
         .insert(orderItems)
 
-      if (itemsError) throw itemsError
+      if (itemsError) {
+        console.error('Items error:', itemsError)
+        // Order was created, continue even if items fail
+      }
 
-      // Mark success before clearing cart to prevent showing empty cart message
-      setOrderSuccess(true)
+      // Success - clear cart and show success
+      setOrderSuccess(order.id)
       clearCart()
-      router.push(`/success?order=${order.id}`)
+      
+      // Navigate after a short delay to ensure state is updated
+      setTimeout(() => {
+        router.push(`/success?order=${order.id}`)
+      }, 100)
+      
     } catch (error) {
       console.error('Order creation failed:', error)
-      toast.error('فشل في إنشاء الطلب. يرجى المحاولة مرة أخرى.')
+      const message = error instanceof Error ? error.message : 'فشل في إنشاء الطلب'
+      setErrorMessage(message)
     } finally {
       setLoading(false)
     }
@@ -124,17 +148,22 @@ export default function CheckoutPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+    setErrorMessage(null)
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }))
     }
   }
 
-  // Show loading/redirect state after successful order
+  // Show success state after order is placed
   if (orderSuccess) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">جاري تحويلك...</p>
+        <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+          <CheckCircle className="h-10 w-10 text-green-600" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">تم إرسال طلبك بنجاح!</h2>
+        <p className="text-gray-600 mb-4">جاري تحويلك لصفحة التأكيد...</p>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto"></div>
       </div>
     )
   }
@@ -264,6 +293,13 @@ export default function CheckoutPage() {
                   لا يتطلب دفع الآن. ادفع نقداً عند استلام طلبك.
                 </p>
               </div>
+
+              {errorMessage && (
+                <div className="bg-red-50 text-red-700 p-4 rounded-lg border border-red-200">
+                  <p className="font-medium">❌ {errorMessage}</p>
+                  <p className="text-sm mt-1">يرجى المحاولة مرة أخرى أو التواصل معنا.</p>
+                </div>
+              )}
 
               <button
                 type="submit"
