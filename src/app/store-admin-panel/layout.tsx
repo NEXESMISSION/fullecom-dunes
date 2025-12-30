@@ -6,10 +6,10 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
 const NAV_ITEMS = [
-  { href: '/store-admin-panel', label: 'Dashboard', icon: '📊' },
-  { href: '/store-admin-panel/orders', label: 'Orders', icon: '📦' },
-  { href: '/store-admin-panel/products', label: 'Products', icon: '🛍️' },
-  { href: '/store-admin-panel/product-types', label: 'Product Types', icon: '📋' },
+  { href: '/store-admin-panel', label: 'لوحة التحكم', icon: '📊' },
+  { href: '/store-admin-panel/orders', label: 'الطلبات', icon: '📦' },
+  { href: '/store-admin-panel/products', label: 'المنتجات', icon: '🛍️' },
+  { href: '/store-admin-panel/product-types', label: 'أنواع المنتجات', icon: '📋' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -80,7 +80,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-          <p className="text-gray-500">Loading...</p>
+          <p className="text-gray-500">جاري التحميل...</p>
         </div>
       </div>
     )
@@ -103,8 +103,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <span className="font-semibold">Admin Panel</span>
-        <a href="/" className="text-sm text-blue-600">View Store</a>
+        <span className="font-semibold">لوحة التحكم</span>
+        <a href="/" className="text-sm text-blue-600">عرض المتجر</a>
       </div>
 
       {/* Sidebar overlay */}
@@ -118,7 +118,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar */}
       <aside className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white z-50 transform transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-4 border-b border-gray-800 flex items-center justify-between">
-          <h1 className="text-lg font-bold">Admin Panel</h1>
+          <h1 className="text-lg font-bold">لوحة التحكم</h1>
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-1 hover:bg-gray-800 rounded"
@@ -156,7 +156,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            Sign Out
+            تسجيل الخروج
           </button>
         </div>
       </aside>
@@ -165,7 +165,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="lg:ml-64">
         <header className="hidden lg:flex bg-white border-b px-6 py-3 items-center justify-between">
           <div></div>
-          <a href="/" className="text-sm text-blue-600 hover:underline">View Store →</a>
+          <a href="/" className="text-sm text-blue-600 hover:underline">عرض المتجر ←</a>
         </header>
 
         <main className="p-4 lg:p-6 mt-14 lg:mt-0">

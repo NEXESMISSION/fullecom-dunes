@@ -58,14 +58,12 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Payment Info */}
+          {/* Support */}
           <div>
-            <h3 className="text-white font-semibold mb-4">الدفع</h3>
-            <div className="bg-gray-800 p-4 rounded-lg">
-              <p className="text-sm text-gray-400 mb-2">نقبل:</p>
-              <p className="text-lg font-semibold text-primary-400">💵 الدفع عند الاستلام</p>
-              <p className="text-xs text-gray-500 mt-2">لا يتطلب دفع مسبق</p>
-            </div>
+            <h3 className="text-white font-semibold mb-4">الدعم</h3>
+            <p className="text-sm text-gray-400">
+              نحن هنا لمساعدتك. تواصل معنا لأي استفسار.
+            </p>
           </div>
         </div>
 
@@ -75,7 +73,7 @@ export default function Footer() {
               href="/store-admin-panel/login"
               className="px-6 py-2 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition-colors"
             >
-              Admin Login
+              دخول المسؤول
             </Link>
             <p className="text-sm text-gray-500">&copy; {new Date().getFullYear()} متجرنا. جميع الحقوق محفوظة.</p>
           </div>

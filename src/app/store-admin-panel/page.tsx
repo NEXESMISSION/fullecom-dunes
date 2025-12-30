@@ -55,25 +55,25 @@ export default function AdminDashboard() {
   }
 
   const statCards = [
-    { title: 'Total Orders', value: stats.totalOrders, color: 'bg-blue-500', href: '/store-admin-panel/orders' },
-    { title: 'Pending', value: stats.pendingOrders, color: 'bg-amber-500', href: '/store-admin-panel/orders' },
-    { title: 'Revenue', value: `$${stats.totalRevenue.toFixed(2)}`, color: 'bg-green-500', href: '/store-admin-panel/orders' },
-    { title: 'Products', value: stats.totalProducts, color: 'bg-purple-500', href: '/store-admin-panel/products' },
+    { title: 'إجمالي الطلبات', value: stats.totalOrders, color: 'bg-blue-500', href: '/store-admin-panel/orders' },
+    { title: 'قيد الانتظار', value: stats.pendingOrders, color: 'bg-amber-500', href: '/store-admin-panel/orders' },
+    { title: 'الإيرادات', value: `${stats.totalRevenue.toFixed(2)} د.ت`, color: 'bg-green-500', href: '/store-admin-panel/orders' },
+    { title: 'المنتجات', value: stats.totalProducts, color: 'bg-purple-500', href: '/store-admin-panel/products' },
   ]
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-900">لوحة التحكم</h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat) => (
           <Link key={stat.title} href={stat.href} className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition">
             <div className="flex items-center gap-3">
               <div className={`${stat.color} w-10 h-10 rounded-lg flex items-center justify-center text-white text-lg`}>
-                {stat.title === 'Total Orders' && '📦'}
-                {stat.title === 'Pending' && '⏳'}
-                {stat.title === 'Revenue' && '💰'}
-                {stat.title === 'Products' && '🛍️'}
+                {stat.title === 'إجمالي الطلبات' && '📦'}
+                {stat.title === 'قيد الانتظار' && '⏳'}
+                {stat.title === 'الإيرادات' && '💰'}
+                {stat.title === 'المنتجات' && '🛍️'}
               </div>
               <div>
                 <p className="text-xs text-gray-500">{stat.title}</p>
@@ -86,11 +86,11 @@ export default function AdminDashboard() {
 
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-4 border-b flex justify-between items-center">
-          <h2 className="font-semibold">Recent Orders</h2>
-          <Link href="/store-admin-panel/orders" className="text-sm text-blue-600 hover:underline">View all</Link>
+          <h2 className="font-semibold">أحدث الطلبات</h2>
+          <Link href="/store-admin-panel/orders" className="text-sm text-blue-600 hover:underline">عرض الكل</Link>
         </div>
         {recentOrders.length === 0 ? (
-          <p className="p-4 text-gray-500 text-center">No orders yet</p>
+          <p className="p-4 text-gray-500 text-center">لا توجد طلبات بعد</p>
         ) : (
           <div className="divide-y">
             {recentOrders.map((order) => (
@@ -100,7 +100,7 @@ export default function AdminDashboard() {
                   <p className="text-sm text-gray-500">{order.city}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold">${order.total_price?.toFixed(2)}</p>
+                  <p className="font-semibold">{order.total_price?.toFixed(2)} د.ت</p>
                   <span className={`text-xs px-2 py-1 rounded-full ${
                     order.status === 'pending' ? 'bg-amber-100 text-amber-800' :
                     order.status === 'delivered' ? 'bg-green-100 text-green-800' :

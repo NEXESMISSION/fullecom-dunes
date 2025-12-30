@@ -4,7 +4,14 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 
-const STATUSES = ['all', 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled']
+const STATUSES = [
+  { value: 'all', label: 'الكل' },
+  { value: 'pending', label: 'قيد الانتظار' },
+  { value: 'confirmed', label: 'مؤكد' },
+  { value: 'shipped', label: 'تم الشحن' },
+  { value: 'delivered', label: 'تم التوصيل' },
+  { value: 'cancelled', label: 'ملغي' },
+]
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([])
@@ -33,7 +40,7 @@ export default function OrdersPage() {
       setOrders(data || [])
     } catch (error) {
       console.error('Error:', error)
-      toast.error('Failed to load orders')
+      toast.error('فشل تحميل الطلبات')
     } finally {
       setLoading(false)
     }
@@ -48,9 +55,9 @@ export default function OrdersPage() {
 
       if (error) throw error
       setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o))
-      toast.success('Status updated')
+      toast.success('تم تحديث الحالة')
     } catch (error) {
-      toast.error('Failed to update')
+      toast.error('فشل التحديث')
     }
   }
 
@@ -74,22 +81,22 @@ export default function OrdersPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <h1 className="text-2xl font-bold">Orders</h1>
+        <h1 className="text-2xl font-bold">الطلبات</h1>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-3 py-2 border rounded-lg bg-white"
         >
           {STATUSES.map(s => (
-            <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+            <option key={s.value} value={s.value}>{s.label}</option>
           ))}
         </select>
       </div>
 
-      <p className="text-sm text-gray-500">{orders.length} orders</p>
+      <p className="text-sm text-gray-500">{orders.length} طلب</p>
 
       {orders.length === 0 ? (
-        <div className="bg-white rounded-lg p-8 text-center text-gray-500">No orders found</div>
+        <div className="bg-white rounded-lg p-8 text-center text-gray-500">لا توجد طلبات</div>
       ) : (
         <div className="space-y-3">
           {orders.map((order) => (
@@ -110,7 +117,7 @@ export default function OrdersPage() {
                     <p className="text-sm text-gray-500">{order.phone} • {order.city}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-blue-600">${order.total_price?.toFixed(2)}</p>
+                    <p className="font-bold text-blue-600">{order.total_price?.toFixed(2)} د.ت</p>
                     <p className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -119,22 +126,22 @@ export default function OrdersPage() {
               {expandedId === order.id && (
                 <div className="border-t p-4 bg-gray-50 space-y-3">
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Address</p>
+                    <p className="text-sm font-medium text-gray-700">العنوان</p>
                     <p className="text-sm text-gray-600">{order.address}</p>
                   </div>
                   {order.notes && (
                     <div>
-                      <p className="text-sm font-medium text-gray-700">Notes</p>
+                      <p className="text-sm font-medium text-gray-700">ملاحظات</p>
                       <p className="text-sm text-gray-600">{order.notes}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-medium text-gray-700 mb-2">Items</p>
+                    <p className="text-sm font-medium text-gray-700 mb-2">المنتجات</p>
                     <div className="bg-white rounded border divide-y">
                       {order.order_items?.map((item: any) => (
                         <div key={item.id} className="p-2 flex justify-between text-sm">
                           <span>{item.product_name} × {item.quantity}</span>
-                          <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                          <span className="font-medium">{(item.price * item.quantity).toFixed(2)} د.ت</span>
                         </div>
                       ))}
                     </div>
@@ -145,12 +152,12 @@ export default function OrdersPage() {
                       onChange={(e) => updateStatus(order.id, e.target.value)}
                       className="px-3 py-1.5 border rounded text-sm bg-white"
                     >
-                      {STATUSES.filter(s => s !== 'all').map(s => (
-                        <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                      {STATUSES.filter(s => s.value !== 'all').map(s => (
+                        <option key={s.value} value={s.value}>{s.label}</option>
                       ))}
                     </select>
                     <a href={`tel:${order.phone}`} className="px-3 py-1.5 border rounded text-sm hover:bg-gray-100">
-                      📞 Call
+                      📞 اتصل
                     </a>
                   </div>
                 </div>

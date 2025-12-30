@@ -44,16 +44,16 @@ export default function ProductCard({ product }: ProductCardProps) {
             </span>
           </div>
         )}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+        {/* Add to cart button - visible on mobile, hover on desktop */}
+        {product.stock > 0 && (
           <button
             onClick={handleAddToCart}
-            disabled={product.stock <= 0}
-            className="p-2 sm:p-3 bg-white rounded-full shadow-lg hover:bg-primary-600 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute bottom-2 right-2 p-2 bg-primary-600 text-white rounded-full shadow-lg active:scale-95 transition-transform sm:opacity-0 sm:group-hover:opacity-100"
             aria-label="أضف إلى السلة"
           >
-            <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+            <ShoppingCart className="h-4 w-4" />
           </button>
-        </div>
+        )}
       </div>
       <div className="p-2 sm:p-4">
         <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide mb-0.5">{productType}</p>
