@@ -17,6 +17,7 @@ export default function ProductTypesPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [name, setName] = useState('')
+  const [image, setImage] = useState('')
   const [fields, setFields] = useState<FormField[]>([])
 
   useEffect(() => {
@@ -33,10 +34,12 @@ export default function ProductTypesPage() {
     if (type) {
       setEditingId(type.id)
       setName(type.name)
+      setImage(type.image || '')
       setFields(type.form_schema?.fields || [])
     } else {
       setEditingId(null)
       setName('')
+      setImage('')
       setFields([])
     }
     setShowModal(true)
@@ -64,11 +67,11 @@ export default function ProductTypesPage() {
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
       const formSchema = { fields }
       if (editingId) {
-        const { error } = await supabase.from('product_types').update({ name, slug, form_schema: formSchema }).eq('id', editingId)
+        const { error } = await supabase.from('product_types').update({ name, slug, image: image || null, form_schema: formSchema }).eq('id', editingId)
         if (error) throw error
         toast.success('تم التحديث')
       } else {
-        const { error } = await supabase.from('product_types').insert({ name, slug, form_schema: formSchema })
+        const { error } = await supabase.from('product_types').insert({ name, slug, image: image || null, form_schema: formSchema })
         if (error) throw error
         toast.success('تم الإنشاء')
       }
@@ -111,6 +114,7 @@ export default function ProductTypesPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">الصورة</th>
                 <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">الاسم</th>
                 <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">الحقول</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">الإجراءات</th>
@@ -119,6 +123,13 @@ export default function ProductTypesPage() {
             <tbody className="divide-y">
               {types.map((type) => (
                 <tr key={type.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    {type.image ? (
+                      <img src={type.image} alt={type.name} className="w-12 h-12 object-cover rounded" />
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">لا صورة</div>
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-medium">{type.name}</td>
                   <td className="px-4 py-3 text-gray-500">{type.form_schema?.fields?.length || 0} حقل</td>
                   <td className="px-4 py-3 text-right">
@@ -143,6 +154,14 @@ export default function ProductTypesPage() {
               <div>
                 <label className="block text-sm font-medium mb-1">الاسم *</label>
                 <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="مثل: ملابس" />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">رابط الصورة</label>
+                <input type="url" value={image} onChange={e => setImage(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="https://..." dir="ltr" />
+                {image && (
+                  <img src={image} alt="معاينة" className="mt-2 w-20 h-20 object-cover rounded border" />
+                )}
               </div>
 
               <div>

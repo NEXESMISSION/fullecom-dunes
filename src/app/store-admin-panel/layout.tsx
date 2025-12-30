@@ -7,10 +7,12 @@ import Link from 'next/link'
 
 const NAV_ITEMS = [
   { href: '/store-admin-panel', label: 'لوحة التحكم', icon: '📊' },
+  { href: '/store-admin-panel/landing', label: 'الصفحة الرئيسية', icon: '🏠' },
   { href: '/store-admin-panel/orders', label: 'الطلبات', icon: '📦' },
   { href: '/store-admin-panel/products', label: 'المنتجات', icon: '🛍️' },
   { href: '/store-admin-panel/product-types', label: 'أنواع المنتجات', icon: '📋' },
-  { href: '/store-admin-panel/settings', label: 'الإعدادات', icon: '⚙️' },
+  { href: '/store-admin-panel/banners', label: 'البانرات', icon: '🖼️' },
+  { href: '/store-admin-panel/promo-images', label: 'صور ترويجية', icon: '🎯' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
