@@ -69,8 +69,16 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} متجرنا. جميع الحقوق محفوظة.</p>
+        <div className="border-t border-gray-800 mt-8 pt-8">
+          <div className="flex flex-col items-center gap-4">
+            <Link 
+              href="/store-admin-panel/login"
+              className="px-6 py-2 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+            >
+              Admin Login
+            </Link>
+            <p className="text-sm text-gray-500">&copy; {new Date().getFullYear()} متجرنا. جميع الحقوق محفوظة.</p>
+          </div>
         </div>
       </div>
     </footer>
