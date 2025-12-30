@@ -6,7 +6,6 @@ import { useCart } from '@/context/CartContext'
 import { ArrowLeft, Loader2, CheckCircle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import { formatOptionsForDisplay } from '@/components/DynamicFormField'
 
 interface FormData {
@@ -102,68 +101,52 @@ export default function CheckoutPage() {
     setLoading(true)
 
     try {
-      // Prepare order data - keep it simple
-      const orderData = {
+      // Prepare order data for API
+      const orderPayload = {
         customer_name: formData.customer_name.trim(),
         phone: formData.phone.trim(),
         city: formData.city.trim(),
         address: formData.address.trim(),
         notes: formData.notes.trim() || null,
         total_price: Number(getCartTotal().toFixed(2)),
-        status: 'pending',
+        items: items.map(item => ({
+          product_id: item.product_id || null,
+          product_name: item.name,
+          price: Number(item.price),
+          quantity: Number(item.quantity),
+          options: item.options && Object.keys(item.options).length > 0 ? item.options : null,
+        }))
       }
 
-      // Create order with retry for mobile networks
-      const order = await retryOperation(async () => {
-        const { data, error } = await supabase
-          .from('orders')
-          .insert(orderData)
-          .select('id')
-          .single()
+      // Call API route with retry for mobile networks
+      const result = await retryOperation(async () => {
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(orderPayload),
+        })
 
-        if (error) {
-          console.error('Supabase order error:', JSON.stringify(error, null, 2))
-          // Show detailed error for debugging
-          const details = error.message || error.code || 'Unknown error'
-          throw new Error(`خطأ قاعدة البيانات: ${details}`)
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'فشل في إنشاء الطلب')
         }
 
-        if (!data?.id) {
+        if (!data.orderId) {
           throw new Error('لم يتم إرجاع معرف الطلب')
         }
 
         return data
       })
 
-      // Create order items (simplified - no product_id foreign key issues)
-      const orderItems = items.map(item => ({
-        order_id: order.id,
-        product_id: item.product_id || null,
-        product_name: item.name,
-        price: Number(item.price),
-        quantity: Number(item.quantity),
-        options: item.options && Object.keys(item.options).length > 0 ? item.options : null,
-      }))
-
-      try {
-        const { error: itemsError } = await supabase
-          .from('order_items')
-          .insert(orderItems)
-
-        if (itemsError) {
-          console.error('Items error:', JSON.stringify(itemsError, null, 2))
-          // Don't fail the order if items fail - order was already created
-        }
-      } catch (itemErr) {
-        console.error('Items insert exception:', itemErr)
-      }
-
       // Success - clear cart and redirect
-      setOrderSuccess(order.id)
+      setOrderSuccess(result.orderId)
       clearCart()
       
       setTimeout(() => {
-        router.push(`/success?order=${order.id}`)
+        router.push(`/success?order=${result.orderId}`)
       }, 100)
       
     } catch (error) {
