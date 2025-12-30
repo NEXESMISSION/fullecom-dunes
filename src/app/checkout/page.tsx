@@ -67,6 +67,26 @@ export default function CheckoutPage() {
     return Object.keys(newErrors).length === 0
   }
 
+  // Retry function for network issues
+  const retryOperation = async <T,>(
+    operation: () => Promise<T>,
+    maxRetries = 3,
+    delay = 1000
+  ): Promise<T> => {
+    let lastError: Error | null = null
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        return await operation()
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error))
+        if (i < maxRetries - 1) {
+          await new Promise(resolve => setTimeout(resolve, delay * (i + 1)))
+        }
+      }
+    }
+    throw lastError
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMessage(null)
@@ -82,63 +102,83 @@ export default function CheckoutPage() {
     setLoading(true)
 
     try {
-      // Create order with timeout for mobile networks
+      // Prepare order data - keep it simple
       const orderData = {
         customer_name: formData.customer_name.trim(),
         phone: formData.phone.trim(),
         city: formData.city.trim(),
         address: formData.address.trim(),
         notes: formData.notes.trim() || null,
-        total_price: getCartTotal(),
+        total_price: Number(getCartTotal().toFixed(2)),
         status: 'pending',
       }
 
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert(orderData)
-        .select('id')
-        .single()
+      // Create order with retry for mobile networks
+      const order = await retryOperation(async () => {
+        const { data, error } = await supabase
+          .from('orders')
+          .insert(orderData)
+          .select('id')
+          .single()
 
-      if (orderError) {
-        console.error('Order error:', orderError)
-        throw new Error('فشل في إنشاء الطلب')
-      }
+        if (error) {
+          console.error('Supabase order error:', JSON.stringify(error, null, 2))
+          // Show detailed error for debugging
+          const details = error.message || error.code || 'Unknown error'
+          throw new Error(`خطأ قاعدة البيانات: ${details}`)
+        }
 
-      if (!order?.id) {
-        throw new Error('لم يتم إرجاع معرف الطلب')
-      }
+        if (!data?.id) {
+          throw new Error('لم يتم إرجاع معرف الطلب')
+        }
 
-      // Create order items
+        return data
+      })
+
+      // Create order items (simplified - no product_id foreign key issues)
       const orderItems = items.map(item => ({
         order_id: order.id,
-        product_id: item.product_id,
+        product_id: item.product_id || null,
         product_name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        options: item.options || {},
+        price: Number(item.price),
+        quantity: Number(item.quantity),
+        options: item.options && Object.keys(item.options).length > 0 ? item.options : null,
       }))
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems)
+      try {
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .insert(orderItems)
 
-      if (itemsError) {
-        console.error('Items error:', itemsError)
-        // Order was created, continue even if items fail
+        if (itemsError) {
+          console.error('Items error:', JSON.stringify(itemsError, null, 2))
+          // Don't fail the order if items fail - order was already created
+        }
+      } catch (itemErr) {
+        console.error('Items insert exception:', itemErr)
       }
 
-      // Success - clear cart and show success
+      // Success - clear cart and redirect
       setOrderSuccess(order.id)
       clearCart()
       
-      // Navigate after a short delay to ensure state is updated
       setTimeout(() => {
         router.push(`/success?order=${order.id}`)
       }, 100)
       
     } catch (error) {
       console.error('Order creation failed:', error)
-      const message = error instanceof Error ? error.message : 'فشل في إنشاء الطلب'
+      let message = 'فشل في إنشاء الطلب'
+      
+      if (error instanceof Error) {
+        message = error.message
+      }
+      
+      // Check for network errors
+      if (String(error).includes('fetch') || String(error).includes('network')) {
+        message = 'خطأ في الاتصال. تأكد من اتصالك بالإنترنت'
+      }
+      
       setErrorMessage(message)
     } finally {
       setLoading(false)
