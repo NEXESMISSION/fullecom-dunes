@@ -58,7 +58,7 @@ export default function ProductTypesPage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    if (!name.trim()) { toast.error('Name required'); return }
+    if (!name.trim()) { toast.error('الاسم مطلوب'); return }
     setSaving(true)
     try {
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
@@ -66,30 +66,30 @@ export default function ProductTypesPage() {
       if (editingId) {
         const { error } = await supabase.from('product_types').update({ name, slug, form_schema: formSchema }).eq('id', editingId)
         if (error) throw error
-        toast.success('Updated')
+        toast.success('تم التحديث')
       } else {
         const { error } = await supabase.from('product_types').insert({ name, slug, form_schema: formSchema })
         if (error) throw error
-        toast.success('Created')
+        toast.success('تم الإنشاء')
       }
       setShowModal(false)
       fetchTypes()
     } catch (error: any) {
-      toast.error(error.message || 'Save failed')
+      toast.error(error.message || 'فشل الحفظ')
     } finally {
       setSaving(false)
     }
   }
 
   async function deleteType(id: string) {
-    if (!confirm('Delete this product type?')) return
+    if (!confirm('هل تريد حذف هذا النوع؟')) return
     try {
       const { error } = await supabase.from('product_types').delete().eq('id', id)
       if (error) throw error
       setTypes(types.filter(t => t.id !== id))
-      toast.success('Deleted')
+      toast.success('تم الحذف')
     } catch (error) {
-      toast.error('Delete failed')
+      toast.error('فشل الحذف')
     }
   }
 
@@ -98,32 +98,32 @@ export default function ProductTypesPage() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Product Types</h1>
+        <h1 className="text-2xl font-bold">أنواع المنتجات</h1>
         <button onClick={() => openModal()} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-          + Add Type
+          + إضافة نوع
         </button>
       </div>
 
       {types.length === 0 ? (
-        <div className="bg-white rounded-lg p-8 text-center text-gray-500">No product types yet</div>
+        <div className="bg-white rounded-lg p-8 text-center text-gray-500">لا توجد أنواع بعد</div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Name</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Fields</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">Actions</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">الاسم</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">الحقول</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {types.map((type) => (
                 <tr key={type.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium">{type.name}</td>
-                  <td className="px-4 py-3 text-gray-500">{type.form_schema?.fields?.length || 0} fields</td>
+                  <td className="px-4 py-3 text-gray-500">{type.form_schema?.fields?.length || 0} حقل</td>
                   <td className="px-4 py-3 text-right">
-                    <button onClick={() => openModal(type)} className="text-blue-600 hover:underline mr-3">Edit</button>
-                    <button onClick={() => deleteType(type.id)} className="text-red-600 hover:underline">Delete</button>
+                    <button onClick={() => openModal(type)} className="text-blue-600 hover:underline ml-3">تعديل</button>
+                    <button onClick={() => deleteType(type.id)} className="text-red-600 hover:underline">حذف</button>
                   </td>
                 </tr>
               ))}
@@ -136,22 +136,22 @@ export default function ProductTypesPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-4 border-b flex justify-between items-center">
-              <h2 className="font-semibold">{editingId ? 'Edit Product Type' : 'New Product Type'}</h2>
+              <h2 className="font-semibold">{editingId ? 'تعديل النوع' : 'نوع جديد'}</h2>
               <button onClick={() => setShowModal(false)} className="p-1 hover:bg-gray-100 rounded">✕</button>
             </div>
             <form onSubmit={handleSave} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Name *</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="e.g., Clothing" />
+                <label className="block text-sm font-medium mb-1">الاسم *</label>
+                <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="مثل: ملابس" />
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-medium">Form Fields</label>
-                  <button type="button" onClick={addField} className="text-sm text-blue-600 hover:underline">+ Add Field</button>
+                  <label className="text-sm font-medium">حقول النموذج</label>
+                  <button type="button" onClick={addField} className="text-sm text-blue-600 hover:underline">+ إضافة حقل</button>
                 </div>
                 {fields.length === 0 ? (
-                  <p className="text-sm text-gray-500 border-2 border-dashed rounded-lg p-4 text-center">No fields yet</p>
+                  <p className="text-sm text-gray-500 border-2 border-dashed rounded-lg p-4 text-center">لا توجد حقول بعد</p>
                 ) : (
                   <div className="space-y-3">
                     {fields.map((field, i) => (
@@ -159,7 +159,7 @@ export default function ProductTypesPage() {
                         <div className="grid grid-cols-2 gap-2 mb-2">
                           <input
                             type="text"
-                            placeholder="Label"
+                            placeholder="العنوان"
                             value={field.label}
                             onChange={e => updateField(i, { label: e.target.value })}
                             className="px-2 py-1.5 border rounded text-sm"
@@ -175,7 +175,7 @@ export default function ProductTypesPage() {
                         {['select', 'radio', 'checkbox'].includes(field.type) && (
                           <input
                             type="text"
-                            placeholder="Options (comma-separated)"
+                            placeholder="الخيارات (مفصولة بفواصل)"
                             value={field.options?.join(', ') || ''}
                             onChange={e => updateField(i, { options: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
                             className="w-full px-2 py-1.5 border rounded text-sm mb-2"
@@ -184,9 +184,9 @@ export default function ProductTypesPage() {
                         <div className="flex justify-between items-center">
                           <label className="flex items-center gap-1 text-sm">
                             <input type="checkbox" checked={field.required} onChange={e => updateField(i, { required: e.target.checked })} className="rounded" />
-                            Required
+                            مطلوب
                           </label>
-                          <button type="button" onClick={() => removeField(i)} className="text-red-600 text-sm">Remove</button>
+                          <button type="button" onClick={() => removeField(i)} className="text-red-600 text-sm">حذف</button>
                         </div>
                       </div>
                     ))}
@@ -195,9 +195,9 @@ export default function ProductTypesPage() {
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2 border rounded-lg hover:bg-gray-50">إلغاء</button>
                 <button type="submit" disabled={saving} className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
-                  {saving ? 'Saving...' : 'Save'}
+                  {saving ? 'جاري الحفظ...' : 'حفظ'}
                 </button>
               </div>
             </form>
