@@ -26,7 +26,7 @@ export default function FloatingCart() {
   return (
     <button
       onClick={() => setIsCartOpen(true)}
-      className={`fixed top-4 left-4 z-40 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300 ${
+      className={`fixed top-4 right-4 z-40 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-all duration-300 ${
         animate 
           ? 'bg-primary-600 text-white scale-110' 
           : 'bg-white/90 backdrop-blur-sm text-gray-900 hover:bg-white'
@@ -48,7 +48,7 @@ export default function FloatingCart() {
         </span>
       </div>
       <span className="font-medium text-sm hidden sm:inline">
-        {animate ? 'Added!' : 'Cart'}
+        {animate ? 'تمت الإضافة!' : 'السلة'}
       </span>
     </button>
   )
