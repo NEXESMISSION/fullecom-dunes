@@ -9,13 +9,21 @@ interface PromoImage {
   title: string
   image: string
   link: string
+  link_type: 'url' | 'category' | 'none'
+  category_id: string | null
   order: number
   size: 'full' | 'half' | 'third'
   is_active: boolean
 }
 
+interface Category {
+  id: string
+  name: string
+}
+
 export default function PromoImagesPage() {
   const [images, setImages] = useState<PromoImage[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -24,6 +32,8 @@ export default function PromoImagesPage() {
     title: '',
     image: '',
     link: '',
+    link_type: 'none' as 'url' | 'category' | 'none',
+    category_id: '' as string,
     order: 0,
     size: 'third' as 'full' | 'half' | 'third',
     is_active: true
@@ -35,15 +45,16 @@ export default function PromoImagesPage() {
 
   async function fetchImages() {
     try {
-      const { data, error } = await supabase
-        .from('promo_images')
-        .select('*')
-        .order('order', { ascending: true })
+      const [imagesRes, categoriesRes] = await Promise.all([
+        supabase.from('promo_images').select('*').order('order', { ascending: true }),
+        supabase.from('product_types').select('id, name').order('name')
+      ])
 
-      if (error) throw error
-      setImages(data || [])
+      if (imagesRes.error) throw imagesRes.error
+      setImages(imagesRes.data || [])
+      setCategories(categoriesRes.data || [])
     } catch (error) {
-      console.error('Error fetching promo images:', error)
+      console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
     }
@@ -56,6 +67,8 @@ export default function PromoImagesPage() {
         title: img.title,
         image: img.image,
         link: img.link || '',
+        link_type: img.link_type || 'none',
+        category_id: img.category_id || '',
         order: img.order,
         size: img.size || 'third',
         is_active: img.is_active
@@ -66,6 +79,8 @@ export default function PromoImagesPage() {
         title: '',
         image: '',
         link: '',
+        link_type: 'none',
+        category_id: '',
         order: images.length,
         size: 'third',
         is_active: true
@@ -82,17 +97,30 @@ export default function PromoImagesPage() {
     }
     setSaving(true)
     try {
+      // Build the final link based on link_type
+      let finalLink = ''
+      if (form.link_type === 'category' && form.category_id) {
+        const category = categories.find(c => c.id === form.category_id)
+        finalLink = `/products?category=${encodeURIComponent(category?.name || '')}`
+      } else if (form.link_type === 'url') {
+        finalLink = form.link
+      }
+
+      const saveData = {
+        title: form.title,
+        image: form.image,
+        link: finalLink || null,
+        link_type: form.link_type,
+        category_id: form.link_type === 'category' ? form.category_id : null,
+        order: form.order,
+        size: form.size,
+        is_active: form.is_active
+      }
+
       if (editingId) {
         const { error } = await supabase
           .from('promo_images')
-          .update({
-            title: form.title,
-            image: form.image,
-            link: form.link || null,
-            order: form.order,
-            size: form.size,
-            is_active: form.is_active
-          })
+          .update(saveData)
           .eq('id', editingId)
 
         if (error) throw error
@@ -100,14 +128,7 @@ export default function PromoImagesPage() {
       } else {
         const { error } = await supabase
           .from('promo_images')
-          .insert({
-            title: form.title,
-            image: form.image,
-            link: form.link || null,
-            order: form.order,
-            size: form.size,
-            is_active: form.is_active
-          })
+          .insert(saveData)
 
         if (error) throw error
         toast.success('تم الإضافة')
@@ -150,7 +171,7 @@ export default function PromoImagesPage() {
         </div>
         <button
           onClick={() => openModal()}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"
         >
           + إضافة صورة
         </button>
@@ -234,16 +255,51 @@ export default function PromoImagesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">رابط الانتقال</label>
-                <input
-                  type="text"
-                  value={form.link}
-                  onChange={e => setForm({ ...form, link: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  placeholder="/products?category=ملابس أو https://..."
-                  dir="ltr"
-                />
-                <p className="text-xs text-gray-500 mt-1">مثال: /products?category=ملابس للانتقال لفئة معينة</p>
+                <label className="block text-sm font-medium mb-1">نوع الرابط</label>
+                <div className="flex gap-2 mb-2">
+                  {[
+                    { value: 'none', label: 'بدون رابط' },
+                    { value: 'category', label: 'فئة منتجات' },
+                    { value: 'url', label: 'رابط مخصص' },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setForm({ ...form, link_type: opt.value as any })}
+                      className={`px-3 py-1.5 text-sm rounded-lg border transition ${
+                        form.link_type === opt.value 
+                          ? 'bg-primary-600 text-white border-primary-600' 
+                          : 'bg-white border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {form.link_type === 'category' && (
+                  <select
+                    value={form.category_id}
+                    onChange={e => setForm({ ...form, category_id: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  >
+                    <option value="">-- اختر فئة --</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                )}
+
+                {form.link_type === 'url' && (
+                  <input
+                    type="text"
+                    value={form.link}
+                    onChange={e => setForm({ ...form, link: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="https://... أو /products"
+                    dir="ltr"
+                  />
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -291,7 +347,7 @@ export default function PromoImagesPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="flex-1 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
                 >
                   {saving ? 'جاري الحفظ...' : 'حفظ'}
                 </button>

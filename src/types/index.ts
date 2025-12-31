@@ -30,7 +30,9 @@ export interface Product {
   slug: string | null
   description: string
   price: number
+  original_price?: number | null
   image: string
+  images?: string[] // Multiple images support
   category: string
   stock: number
   product_type_id: string | null

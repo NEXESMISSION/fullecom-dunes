@@ -13,9 +13,10 @@ export default function ProductsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({
-    name: '', description: '', price: '', stock: '',
-    image: '', product_type_id: '', is_active: true
+    name: '', description: '', price: '', original_price: '', stock: '',
+    image: '', images: [] as string[], product_type_id: '', is_active: true
   })
+  const [newImageUrl, setNewImageUrl] = useState('')
 
   useEffect(() => {
     fetchProducts()
@@ -41,13 +42,17 @@ export default function ProductsPage() {
       setEditingId(product.id)
       setForm({
         name: product.name, description: product.description || '',
-        price: product.price.toString(), stock: product.stock.toString(),
+        price: product.price.toString(), original_price: product.original_price?.toString() || '',
+        stock: product.stock.toString(),
         image: product.image || '',
+        images: product.images || [],
         product_type_id: product.product_type_id || '', is_active: product.is_active !== false
       })
+      setNewImageUrl('')
     } else {
       setEditingId(null)
-      setForm({ name: '', description: '', price: '', stock: '', image: '', product_type_id: '', is_active: true })
+      setForm({ name: '', description: '', price: '', original_price: '', stock: '', image: '', images: [], product_type_id: '', is_active: true })
+      setNewImageUrl('')
     }
     setShowModal(true)
   }
@@ -58,37 +63,40 @@ export default function ProductsPage() {
     try {
       const data = {
         name: form.name, description: form.description,
-        price: parseFloat(form.price), stock: parseInt(form.stock),
-        image: form.image,
+        price: parseFloat(form.price), 
+        original_price: form.original_price ? parseFloat(form.original_price) : null,
+        stock: parseInt(form.stock),
+        image: form.image || (form.images.length > 0 ? form.images[0] : ''),
+        images: form.images,
         product_type_id: form.product_type_id || null, is_active: form.is_active
       }
       if (editingId) {
         const { error } = await supabase.from('products').update(data).eq('id', editingId)
         if (error) throw error
-        toast.success('تم تحديث المنتج')
+        toast.success('Produit mis à jour')
       } else {
         const { error } = await supabase.from('products').insert(data)
         if (error) throw error
-        toast.success('تم إنشاء المنتج')
+        toast.success('Produit créé')
       }
       setShowModal(false)
       fetchProducts()
     } catch (error: any) {
-      toast.error(error.message || 'فشل الحفظ')
+      toast.error(error.message || 'Erreur de sauvegarde')
     } finally {
       setSaving(false)
     }
   }
 
   async function deleteProduct(id: string) {
-    if (!confirm('هل تريد حذف هذا المنتج؟')) return
+    if (!confirm('Supprimer ce produit ?')) return
     try {
       const { error } = await supabase.from('products').delete().eq('id', id)
       if (error) throw error
       setProducts(products.filter(p => p.id !== id))
-      toast.success('تم الحذف')
+      toast.success('Supprimé')
     } catch (error) {
-      toast.error('فشل الحذف')
+      toast.error('Erreur de suppression')
     }
   }
 
@@ -97,14 +105,14 @@ export default function ProductsPage() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">المنتجات</h1>
-        <button onClick={() => openModal()} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-          + إضافة منتج
+        <h1 className="text-2xl font-bold">Produits</h1>
+        <button onClick={() => openModal()} className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
+          + Nouveau produit
         </button>
       </div>
 
       {products.length === 0 ? (
-        <div className="bg-white rounded-lg p-8 text-center text-gray-500">لا توجد منتجات بعد</div>
+        <div className="bg-white p-8 text-center text-gray-500">Aucun produit</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((p) => (
@@ -117,16 +125,16 @@ export default function ProductsPage() {
                 )}
               </div>
               <div className="p-3">
-                <p className="text-xs text-gray-500">{p.product_type?.name || 'بدون نوع'}</p>
+                <p className="text-xs text-gray-500">{p.product_type?.name || 'Sans catégorie'}</p>
                 <h3 className="font-medium truncate">{p.name}</h3>
                 <div className="flex justify-between items-center mt-2">
-                  <span className="font-bold text-blue-600">{p.price.toFixed(2)} د.ت</span>
+                  <span className="font-bold text-primary-600">{p.price.toFixed(2)} DT</span>
                   <span className={`text-xs ${p.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {p.stock > 0 ? `${p.stock} متوفر` : 'نفذ المخزون'}
+                    {p.stock > 0 ? `${p.stock} en stock` : 'Épuisé'}
                   </span>
                 </div>
                 <div className="flex gap-2 mt-3">
-                  <button onClick={() => openModal(p)} className="flex-1 py-1.5 border rounded text-sm hover:bg-gray-50">تعديل</button>
+                  <button onClick={() => openModal(p)} className="flex-1 py-1.5 border text-sm hover:bg-gray-50">Modifier</button>
                   <button onClick={() => deleteProduct(p.id)} className="py-1.5 px-3 border border-red-200 text-red-600 rounded text-sm hover:bg-red-50">🗑</button>
                 </div>
               </div>
@@ -139,47 +147,93 @@ export default function ProductsPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-4 border-b flex justify-between items-center">
-              <h2 className="font-semibold">{editingId ? 'تعديل المنتج' : 'إضافة منتج'}</h2>
+              <h2 className="font-semibold">{editingId ? 'Modifier' : 'Nouveau produit'}</h2>
               <button onClick={() => setShowModal(false)} className="p-1 hover:bg-gray-100 rounded">✕</button>
             </div>
             <form onSubmit={handleSave} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">الاسم *</label>
+                <label className="block text-sm font-medium mb-1">Nom *</label>
                 <input type="text" required value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full px-3 py-2 border rounded-lg" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">الوصف</label>
+                <label className="block text-sm font-medium mb-1">Description</label>
                 <textarea rows={2} value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="w-full px-3 py-2 border rounded-lg" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1">السعر *</label>
+                  <label className="block text-sm font-medium mb-1">Prix *</label>
                   <input type="number" step="0.01" required value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="w-full px-3 py-2 border rounded-lg" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">المخزون *</label>
-                  <input type="number" required value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="w-full px-3 py-2 border rounded-lg" />
+                  <label className="block text-sm font-medium mb-1">Ancien prix</label>
+                  <input type="number" step="0.01" value={form.original_price} onChange={e => setForm({...form, original_price: e.target.value})} className="w-full px-3 py-2 border rounded-lg" placeholder="Prix barré" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">نوع المنتج *</label>
+                <label className="block text-sm font-medium mb-1">Stock *</label>
+                <input type="number" required value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="w-full px-3 py-2 border rounded-lg" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Catégorie *</label>
                 <select required value={form.product_type_id} onChange={e => setForm({...form, product_type_id: e.target.value})} className="w-full px-3 py-2 border rounded-lg">
-                  <option value="">اختر نوع...</option>
+                  <option value="">Choisir...</option>
                   {productTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">رابط الصورة</label>
+                <label className="block text-sm font-medium mb-1">Image principale</label>
                 <input type="url" value={form.image} onChange={e => setForm({...form, image: e.target.value})} className="w-full px-3 py-2 border rounded-lg" placeholder="https://..." />
+              </div>
+              
+              {/* Multiple Images */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Images supplémentaires</label>
+                <div className="flex gap-2 mb-2">
+                  <input 
+                    type="url" 
+                    value={newImageUrl} 
+                    onChange={e => setNewImageUrl(e.target.value)} 
+                    className="flex-1 px-3 py-2 border rounded-lg text-sm" 
+                    placeholder="https://..." 
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      if (newImageUrl.trim()) {
+                        setForm({...form, images: [...form.images, newImageUrl.trim()]})
+                        setNewImageUrl('')
+                      }
+                    }}
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm"
+                  >
+                    +
+                  </button>
+                </div>
+                {form.images.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {form.images.map((img, i) => (
+                      <div key={i} className="relative group">
+                        <img src={img} alt={`Image ${i+1}`} className="w-16 h-16 object-cover rounded border" />
+                        <button
+                          type="button"
+                          onClick={() => setForm({...form, images: form.images.filter((_, idx) => idx !== i)})}
+                          className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={form.is_active} onChange={e => setForm({...form, is_active: e.target.checked})} className="rounded" />
-                <span className="text-sm">نشط (مرئي للعملاء)</span>
+                <span className="text-sm">Actif (visible)</span>
               </label>
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2 border rounded-lg hover:bg-gray-50">إلغاء</button>
-                <button type="submit" disabled={saving} className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
-                  {saving ? 'جاري الحفظ...' : 'حفظ'}
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2 border hover:bg-gray-50">Annuler</button>
+                <button type="submit" disabled={saving} className="flex-1 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50">
+                  {saving ? 'Sauvegarde...' : 'Sauvegarder'}
                 </button>
               </div>
             </form>

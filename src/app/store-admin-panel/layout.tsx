@@ -5,14 +5,25 @@ import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
-const NAV_ITEMS = [
-  { href: '/store-admin-panel', label: 'لوحة التحكم', icon: '📊' },
-  { href: '/store-admin-panel/landing', label: 'الصفحة الرئيسية', icon: '🏠' },
-  { href: '/store-admin-panel/orders', label: 'الطلبات', icon: '📦' },
-  { href: '/store-admin-panel/products', label: 'المنتجات', icon: '🛍️' },
-  { href: '/store-admin-panel/product-types', label: 'أنواع المنتجات', icon: '📋' },
-  { href: '/store-admin-panel/banners', label: 'البانرات', icon: '🖼️' },
-  { href: '/store-admin-panel/promo-images', label: 'صور ترويجية', icon: '🎯' },
+const NAV_GROUPS = [
+  {
+    title: 'Gestion',
+    items: [
+      { href: '/store-admin-panel/orders', label: 'Commandes', icon: '📦' },
+      { href: '/store-admin-panel/products', label: 'Produits', icon: '🛍️' },
+      { href: '/store-admin-panel/categories', label: 'Catégories', icon: '📋' },
+      { href: '/store-admin-panel/product-types', label: 'Types de produits', icon: '🏷️' },
+    ]
+  },
+  {
+    title: 'Page d\'accueil',
+    items: [
+      { href: '/store-admin-panel/sections', label: 'Sections Produits', icon: '📑' },
+      { href: '/store-admin-panel/banners', label: 'Bannières', icon: '🖼️' },
+      { href: '/store-admin-panel/promo-images', label: 'Images Promo', icon: '🎯' },
+      { href: '/store-admin-panel/landing', label: 'Paramètres', icon: '⚙️' },
+    ]
+  },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -82,8 +93,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-          <p className="text-gray-500">جاري التحميل...</p>
+          <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+          <p className="text-gray-500">Chargement...</p>
         </div>
       </div>
     )
@@ -106,8 +117,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <span className="font-semibold">لوحة التحكم</span>
-        <a href="/" className="text-sm text-blue-600">عرض المتجر</a>
+        <span className="font-semibold">Tableau de bord</span>
+        <a href="/" className="text-sm text-primary-600">Voir le site</a>
       </div>
 
       {/* Sidebar overlay */}
@@ -121,7 +132,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar */}
       <aside className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white z-50 transform transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-4 border-b border-gray-800 flex items-center justify-between">
-          <h1 className="text-lg font-bold">لوحة التحكم</h1>
+          <h1 className="text-lg font-bold">Administration</h1>
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-1 hover:bg-gray-800 rounded"
@@ -132,21 +143,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
         </div>
 
-        <nav className="p-4 space-y-1">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition ${
-                pathname === item.href
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-300 hover:bg-gray-800'
-              }`}
-            >
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
-            </Link>
+        <nav className="p-4 space-y-4">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.title}>
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-2 px-3">{group.title}</p>
+              <div className="space-y-1">
+                {group.items.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    prefetch={true}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition ${
+                      pathname === item.href
+                        ? 'bg-primary-600 text-white'
+                        : 'text-gray-300 hover:bg-gray-800'
+                    }`}
+                  >
+                    <span>{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
@@ -159,7 +178,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            تسجيل الخروج
+            Déconnexion
           </button>
         </div>
       </aside>
@@ -168,7 +187,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="lg:ml-64">
         <header className="hidden lg:flex bg-white border-b px-6 py-3 items-center justify-between">
           <div></div>
-          <a href="/" className="text-sm text-blue-600 hover:underline">عرض المتجر ←</a>
+          <a href="/" className="text-sm text-primary-600 hover:underline">Voir le site →</a>
         </header>
 
         <main className="p-4 lg:p-6 mt-14 lg:mt-0">

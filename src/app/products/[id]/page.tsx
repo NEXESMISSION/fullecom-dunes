@@ -20,6 +20,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1)
   const [productOptions, setProductOptions] = useState<ProductOptions>({})
   const [optionErrors, setOptionErrors] = useState<{ [key: string]: string }>({})
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
 
   const formFields: FormField[] = product?.product_type?.form_schema?.fields || []
 
@@ -70,7 +71,7 @@ export default function ProductDetailPage() {
       const { isValid, errors } = validateProductOptions(formFields, productOptions)
       if (!isValid) {
         setOptionErrors(errors)
-        toast.error('يرجى ملء جميع الخيارات المطلوبة')
+        toast.error('Veuillez remplir toutes les options requises')
         return
       }
     }
@@ -93,7 +94,7 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 md:pt-36 pb-8">
         <div className="animate-pulse">
           <div className="h-6 w-32 bg-gray-200 rounded mb-8" />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -112,11 +113,11 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">المنتج غير موجود</h1>
-        <p className="text-gray-500 mb-8">المنتج الذي تبحث عنه غير موجود.</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 md:pt-36 pb-16 text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Produit introuvable</h1>
+        <p className="text-gray-500 mb-8">Ce produit n'existe pas ou a été supprimé.</p>
         <Link href="/products" className="btn-primary inline-block">
-          العودة إلى المنتجات
+          Retour aux produits
         </Link>
       </div>
     )
@@ -124,14 +125,14 @@ export default function ProductDetailPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Link */}
+      <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 md:pt-36 pb-8">
+        {/* Back Link - with minimum 20px spacing from navbar */}
         <Link
           href="/products"
-          className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-8"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 mb-8 mt-5"
         >
-          <ArrowLeft className="h-4 w-4 ml-2" />
-          العودة إلى المنتجات
+          <ArrowLeft className="h-4 w-4" />
+          Retour aux produits
         </Link>
 
         {/* Product Details */}

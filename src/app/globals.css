@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide scrollbar for sliding categories */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+:root {
+  --primary-50: 230 234 242;
+  --primary-100: 204 213 230;
+  --primary-200: 153 171 204;
+  --primary-300: 102 129 179;
+  --primary-400: 51 87 153;
+  --primary-500: 0 45 128;
+  --primary-600: 0 35 102;
+  --primary-700: 0 28 82;
+  --primary-800: 0 21 61;
+  --primary-900: 0 14 41;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;

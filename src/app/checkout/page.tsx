@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
-import { ArrowLeft, Loader2, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Loader2, CheckCircle, Plus, Minus, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatOptionsForDisplay } from '@/components/DynamicFormField'
@@ -25,7 +25,7 @@ interface FormErrors {
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { items, getCartTotal, clearCart } = useCart()
+  const { items, getCartTotal, clearCart, updateQuantity, removeFromCart } = useCart()
   const [loading, setLoading] = useState(false)
   const [orderSuccess, setOrderSuccess] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -40,6 +40,11 @@ export default function CheckoutPage() {
   
   // Store cart data before clearing
   const cartDataRef = useRef<{ items: typeof items; total: number } | null>(null)
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -206,11 +211,11 @@ export default function CheckoutPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Link
-        href="/cart"
+        href="/products"
         className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-8"
       >
         <ArrowLeft className="h-4 w-4 ml-2" />
-        العودة إلى السلة
+        متابعة التسوق
       </Link>
 
       <h1 className="text-3xl font-bold text-gray-900 mb-8">إتمام الشراء</h1>
@@ -347,12 +352,12 @@ export default function CheckoutPage() {
           <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">ملخص الطلب</h2>
 
-            <div className="divide-y max-h-64 overflow-y-auto">
+            <div className="divide-y max-h-80 overflow-y-auto">
               {items.map(item => {
                 const optionsList = formatOptionsForDisplay(item.options || {})
                 return (
-                  <div key={item.optionsKey} className="py-3 flex gap-3">
-                    <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                  <div key={item.optionsKey} className="py-4 flex gap-3">
+                    <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                       <Image
                         src={item.image || '/placeholder.png'}
                         alt={item.name}
@@ -362,18 +367,48 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 truncate">{item.name}</p>
-                      {optionsList.length > 0 && (
-                        <div className="text-xs text-gray-500 mt-0.5">
-                          {optionsList.map((opt, idx) => (
-                            <span key={idx} className="block">{opt}</span>
-                          ))}
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-medium text-gray-900">{item.name}</p>
+                          {optionsList.length > 0 && (
+                            <div className="text-xs text-gray-500 mt-0.5">
+                              {optionsList.map((opt, idx) => (
+                                <span key={idx} className="block">{opt}</span>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-sm text-gray-500 mt-1">{item.price.toFixed(2)} د.ت للقطعة</p>
                         </div>
-                      )}
-                      <p className="text-sm text-gray-500">الكمية: {item.quantity}</p>
-                      <p className="text-sm font-medium text-primary-600">
-                        {(item.price * item.quantity).toFixed(2)} د.ت
-                      </p>
+                        <button
+                          onClick={() => removeFromCart(item.optionsKey)}
+                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition"
+                          title="حذف"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center gap-1 bg-gray-100 rounded-lg">
+                          <button
+                            onClick={() => updateQuantity(item.optionsKey, item.quantity - 1)}
+                            className="p-2 hover:bg-gray-200 rounded-lg transition"
+                            disabled={item.quantity <= 1}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </button>
+                          <span className="w-8 text-center font-medium">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(item.optionsKey, item.quantity + 1)}
+                            className="p-2 hover:bg-gray-200 rounded-lg transition"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <p className="font-semibold text-primary-600">
+                          {(item.price * item.quantity).toFixed(2)} د.ت
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )

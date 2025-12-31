@@ -108,7 +108,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition disabled:opacity-50"
+              className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2.5 rounded-lg transition disabled:opacity-50"
             >
               {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
             </button>
@@ -116,7 +116,7 @@ export default function AdminLoginPage() {
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-4">
-          <a href="/" className="text-blue-600 hover:underline">→ العودة إلى المتجر</a>
+          <a href="/" className="text-primary-600 hover:underline">→ العودة إلى المتجر</a>
         </p>
       </div>
     </div>

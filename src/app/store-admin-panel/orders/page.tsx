@@ -3,20 +3,22 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
+import { Search } from 'lucide-react'
 
 const STATUSES = [
-  { value: 'all', label: 'الكل' },
-  { value: 'pending', label: 'قيد الانتظار' },
-  { value: 'confirmed', label: 'مؤكد' },
-  { value: 'shipped', label: 'تم الشحن' },
-  { value: 'delivered', label: 'تم التوصيل' },
-  { value: 'cancelled', label: 'ملغي' },
+  { value: 'all', label: 'Tous', color: 'bg-gray-100 text-gray-700' },
+  { value: 'pending', label: 'En attente', color: 'bg-amber-100 text-amber-700' },
+  { value: 'confirmed', label: 'Confirmé', color: 'bg-blue-100 text-primary-700' },
+  { value: 'shipped', label: 'Expédié', color: 'bg-purple-100 text-purple-700' },
+  { value: 'delivered', label: 'Livré', color: 'bg-green-100 text-green-700' },
+  { value: 'cancelled', label: 'Annulé', color: 'bg-red-100 text-red-700' },
 ]
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export default function OrdersPage() {
       setOrders(data || [])
     } catch (error) {
       console.error('Error:', error)
-      toast.error('فشل تحميل الطلبات')
+      toast.error('Erreur de chargement')
     } finally {
       setLoading(false)
     }
@@ -55,9 +57,9 @@ export default function OrdersPage() {
 
       if (error) throw error
       setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o))
-      toast.success('تم تحديث الحالة')
+      toast.success('Statut mis à jour')
     } catch (error) {
-      toast.error('فشل التحديث')
+      toast.error('Erreur de mise à jour')
     }
   }
 
@@ -78,28 +80,63 @@ export default function OrdersPage() {
     </div>
   }
 
+  // Filter orders by search query
+  const filteredOrders = orders.filter(order => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    return (
+      order.customer_name?.toLowerCase().includes(query) ||
+      order.phone?.includes(query) ||
+      order.city?.toLowerCase().includes(query) ||
+      order.id?.toLowerCase().includes(query)
+    )
+  })
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <h1 className="text-2xl font-bold">الطلبات</h1>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 border rounded-lg bg-white"
-        >
+      <h1 className="text-2xl font-bold">Commandes</h1>
+
+      {/* Filters */}
+      <div className="flex flex-col gap-3">
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Rechercher par nom, téléphone, ville..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-3 py-2 pr-10 border rounded-lg bg-white"
+          />
+        </div>
+
+        {/* Status filter tabs */}
+        <div className="flex flex-wrap gap-2">
           {STATUSES.map(s => (
-            <option key={s.value} value={s.value}>{s.label}</option>
+            <button
+              key={s.value}
+              onClick={() => setStatusFilter(s.value)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                statusFilter === s.value
+                  ? s.color + ' ring-2 ring-offset-1 ring-current'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {s.label}
+            </button>
           ))}
-        </select>
+        </div>
       </div>
 
-      <p className="text-sm text-gray-500">{orders.length} طلب</p>
+      <p className="text-sm text-gray-500">{filteredOrders.length} commande(s)</p>
 
-      {orders.length === 0 ? (
-        <div className="bg-white rounded-lg p-8 text-center text-gray-500">لا توجد طلبات</div>
+      {filteredOrders.length === 0 ? (
+        <div className="bg-white rounded-lg p-8 text-center text-gray-500">
+          {searchQuery ? 'Aucun résultat' : 'Aucune commande'}
+        </div>
       ) : (
         <div className="space-y-3">
-          {orders.map((order) => (
+          {filteredOrders.map((order) => (
             <div key={order.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
               <div
                 className="p-4 cursor-pointer hover:bg-gray-50"
@@ -117,7 +154,7 @@ export default function OrdersPage() {
                     <p className="text-sm text-gray-500">{order.phone} • {order.city}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-blue-600">{order.total_price?.toFixed(2)} د.ت</p>
+                    <p className="font-bold text-primary-600">{order.total_price?.toFixed(2)} DT</p>
                     <p className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -126,22 +163,41 @@ export default function OrdersPage() {
               {expandedId === order.id && (
                 <div className="border-t p-4 bg-gray-50 space-y-3">
                   <div>
-                    <p className="text-sm font-medium text-gray-700">العنوان</p>
+                    <p className="text-sm font-medium text-gray-700">Adresse</p>
                     <p className="text-sm text-gray-600">{order.address}</p>
                   </div>
                   {order.notes && (
                     <div>
-                      <p className="text-sm font-medium text-gray-700">ملاحظات</p>
+                      <p className="text-sm font-medium text-gray-700">Notes</p>
                       <p className="text-sm text-gray-600">{order.notes}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-medium text-gray-700 mb-2">المنتجات</p>
+                    <p className="text-sm font-medium text-gray-700 mb-2">Produits ({order.order_items?.length || 0})</p>
                     <div className="bg-white rounded border divide-y">
+                      {(!order.order_items || order.order_items.length === 0) && (
+                        <div className="p-3 text-sm text-gray-500 text-center">Aucun produit</div>
+                      )}
                       {order.order_items?.map((item: any) => (
-                        <div key={item.id} className="p-2 flex justify-between text-sm">
-                          <span>{item.product_name} × {item.quantity}</span>
-                          <span className="font-medium">{(item.price * item.quantity).toFixed(2)} د.ت</span>
+                        <div key={item.id} className="p-3">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="font-medium">{item.product_name} × {item.quantity}</span>
+                            <span className="font-medium text-primary-600">{(item.price * item.quantity).toFixed(2)} DT</span>
+                          </div>
+                          {/* Product options/form fields */}
+                          {item.options && Object.keys(item.options).length > 0 && (
+                            <div className="mt-2 pt-2 border-t border-dashed">
+                              <p className="text-xs text-gray-500 mb-1">Options:</p>
+                              <div className="grid grid-cols-2 gap-1">
+                                {Object.entries(item.options).map(([key, value]) => (
+                                  <div key={key} className="text-xs">
+                                    <span className="text-gray-500">{key}:</span>{' '}
+                                    <span className="text-gray-800">{Array.isArray(value) ? value.join(', ') : String(value)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -157,7 +213,7 @@ export default function OrdersPage() {
                       ))}
                     </select>
                     <a href={`tel:${order.phone}`} className="px-3 py-1.5 border rounded text-sm hover:bg-gray-100">
-                      📞 اتصل
+                      📞 Appeler
                     </a>
                   </div>
                 </div>

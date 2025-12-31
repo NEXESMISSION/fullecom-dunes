@@ -81,7 +81,7 @@ export default function BannersPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     if (!form.title.trim() || !form.image.trim()) {
-      toast.error('العنوان والصورة مطلوبان')
+      toast.error('Titre et image requis')
       return
     }
     setSaving(true)
@@ -101,7 +101,7 @@ export default function BannersPage() {
           .eq('id', editingId)
 
         if (error) throw error
-        toast.success('تم التحديث')
+        toast.success('Mis à jour')
       } else {
         const { error } = await supabase
           .from('banners')
@@ -116,26 +116,26 @@ export default function BannersPage() {
           })
 
         if (error) throw error
-        toast.success('تم الإضافة')
+        toast.success('Ajouté')
       }
       setShowModal(false)
       fetchBanners()
     } catch (error: any) {
-      toast.error(error.message || 'فشل الحفظ')
+      toast.error(error.message || 'Erreur')
     } finally {
       setSaving(false)
     }
   }
 
   async function deleteBanner(id: string) {
-    if (!confirm('هل تريد حذف هذا البانر؟')) return
+    if (!confirm('Supprimer cette bannière ?')) return
     try {
       const { error } = await supabase.from('banners').delete().eq('id', id)
       if (error) throw error
       setBanners(banners.filter(b => b.id !== id))
-      toast.success('تم الحذف')
+      toast.success('Supprimé')
     } catch (error) {
-      toast.error('فشل الحذف')
+      toast.error('Erreur de suppression')
     }
   }
 
@@ -149,7 +149,7 @@ export default function BannersPage() {
       if (error) throw error
       setBanners(banners.map(b => b.id === id ? { ...b, is_active: !currentState } : b))
     } catch (error) {
-      toast.error('فشل التحديث')
+      toast.error('Erreur')
     }
   }
 
@@ -164,18 +164,18 @@ export default function BannersPage() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">البانرات الإعلانية</h1>
+        <h1 className="text-2xl font-bold">Bannières</h1>
         <button
           onClick={() => openModal()}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"
         >
-          + إضافة بانر
+          + Ajouter
         </button>
       </div>
 
       {banners.length === 0 ? (
         <div className="bg-white rounded-lg p-8 text-center text-gray-500">
-          لا توجد بانرات بعد
+          Aucune bannière
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -189,19 +189,19 @@ export default function BannersPage() {
                 />
                 {!banner.is_active && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="bg-red-500 text-white px-2 py-1 rounded text-sm">معطل</span>
+                    <span className="bg-red-500 text-white px-2 py-1 rounded text-sm">Inactif</span>
                   </div>
                 )}
               </div>
               <div className="p-3">
                 <h3 className="font-medium truncate">{banner.title}</h3>
-                <p className="text-xs text-gray-500 truncate">{banner.link || 'بدون رابط'}</p>
+                <p className="text-xs text-gray-500 truncate">{banner.link || 'Sans lien'}</p>
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => openModal(banner)}
                     className="flex-1 py-1.5 border rounded text-sm hover:bg-gray-50"
                   >
-                    تعديل
+                    Modifier
                   </button>
                   <button
                     onClick={() => toggleActive(banner.id, banner.is_active)}
@@ -209,7 +209,7 @@ export default function BannersPage() {
                       banner.is_active ? 'text-amber-600 border-amber-200' : 'text-green-600 border-green-200'
                     }`}
                   >
-                    {banner.is_active ? 'تعطيل' : 'تفعيل'}
+                    {banner.is_active ? 'Désactiver' : 'Activer'}
                   </button>
                   <button
                     onClick={() => deleteBanner(banner.id)}
@@ -228,23 +228,23 @@ export default function BannersPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg w-full max-w-md">
             <div className="p-4 border-b flex justify-between items-center">
-              <h2 className="font-semibold">{editingId ? 'تعديل البانر' : 'إضافة بانر'}</h2>
+              <h2 className="font-semibold">{editingId ? 'Modifier' : 'Nouvelle bannière'}</h2>
               <button onClick={() => setShowModal(false)} className="p-1 hover:bg-gray-100 rounded">✕</button>
             </div>
             <form onSubmit={handleSave} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">العنوان *</label>
+                <label className="block text-sm font-medium mb-1">Titre *</label>
                 <input
                   type="text"
                   value={form.title}
                   onChange={e => setForm({ ...form, title: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg"
-                  placeholder="عنوان البانر"
+                  placeholder="Titre de la bannière"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">رابط الصورة *</label>
+                <label className="block text-sm font-medium mb-1">URL image *</label>
                 <input
                   type="url"
                   value={form.image}
@@ -254,25 +254,25 @@ export default function BannersPage() {
                   dir="ltr"
                 />
                 {form.image && (
-                  <img src={form.image} alt="معاينة" className="mt-2 w-full h-32 object-cover rounded border" />
+                  <img src={form.image} alt="Aperçu" className="mt-2 w-full h-32 object-cover rounded border" />
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">رابط الانتقال (اختياري)</label>
+                <label className="block text-sm font-medium mb-1">Lien (optionnel)</label>
                 <input
                   type="url"
                   value={form.link}
                   onChange={e => setForm({ ...form, link: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg"
-                  placeholder="https://... أو /products"
+                  placeholder="https://... ou /products"
                   dir="ltr"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1">الترتيب</label>
+                  <label className="block text-sm font-medium mb-1">Ordre</label>
                   <input
                     type="number"
                     value={form.order}
@@ -281,30 +281,30 @@ export default function BannersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">العرض</label>
+                  <label className="block text-sm font-medium mb-1">Largeur</label>
                   <select
                     value={form.size}
                     onChange={e => setForm({ ...form, size: e.target.value as any })}
                     className="w-full px-3 py-2 border rounded-lg"
                   >
-                    <option value="full">كامل العرض</option>
-                    <option value="half">نصف العرض</option>
-                    <option value="third">ثلث العرض</option>
+                    <option value="full">Pleine largeur</option>
+                    <option value="half">Demi largeur</option>
+                    <option value="third">Tiers</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">الارتفاع</label>
+                <label className="block text-sm font-medium mb-1">Hauteur</label>
                 <select
                   value={form.height}
                   onChange={e => setForm({ ...form, height: e.target.value as any })}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
-                  <option value="tall">عالي (16:9)</option>
-                  <option value="medium">متوسط (2:1)</option>
-                  <option value="short">قصير (3:1)</option>
-                  <option value="thin">رفيع (4:1)</option>
+                  <option value="tall">Grande (16:9)</option>
+                  <option value="medium">Moyenne (2:1)</option>
+                  <option value="short">Petite (3:1)</option>
+                  <option value="thin">Fine (4:1)</option>
                 </select>
               </div>
 
@@ -315,7 +315,7 @@ export default function BannersPage() {
                   onChange={e => setForm({ ...form, is_active: e.target.checked })}
                   className="rounded"
                 />
-                <span className="text-sm">نشط (يظهر في الصفحة الرئيسية)</span>
+                <span className="text-sm">Actif (visible sur le site)</span>
               </label>
 
               <div className="flex gap-3 pt-2">
@@ -324,14 +324,14 @@ export default function BannersPage() {
                   onClick={() => setShowModal(false)}
                   className="flex-1 py-2 border rounded-lg hover:bg-gray-50"
                 >
-                  إلغاء
+                  Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="flex-1 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
                 >
-                  {saving ? 'جاري الحفظ...' : 'حفظ'}
+                  {saving ? 'Sauvegarde...' : 'Sauvegarder'}
                 </button>
               </div>
             </form>

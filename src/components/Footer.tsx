@@ -1,82 +1,70 @@
-import { Store, Mail, Phone, MapPin } from 'lucide-react'
+import { Store, Mail, Phone, Facebook, Instagram, Twitter } from 'lucide-react'
 import Link from 'next/link'
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <footer className="bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main Footer */}
+        <div className="py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
-          <div>
+          <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <Store className="h-8 w-8 text-primary-400" />
-              <span className="text-xl font-bold text-white">متجرنا</span>
+              <img 
+                src="/logo dunes.png" 
+                alt="Dunes d'Or" 
+                className="h-12 w-auto object-contain"
+              />
+              <span className="text-xl font-bold text-white">Dunes d'Or</span>
             </Link>
-            <p className="text-sm text-gray-400">
-              منتجات عالية الجودة تصل إلى باب منزلك. ادفع عند الاستلام، بدون متاعب.
+            <p className="text-gray-400 text-sm max-w-md">
+              Votre destination shopping en ligne. Produits de qualité, livraison rapide et paiement à la livraison.
             </p>
+            <div className="flex gap-3 mt-4">
+              <a href="#" className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary-600 hover:text-white transition-colors">
+                <Facebook className="h-4 w-4" />
+              </a>
+              <a href="#" className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary-600 hover:text-white transition-colors">
+                <Instagram className="h-4 w-4" />
+              </a>
+              <a href="#" className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary-600 hover:text-white transition-colors">
+                <Twitter className="h-4 w-4" />
+              </a>
+            </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">روابط سريعة</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/" className="text-sm hover:text-primary-400 transition-colors">
-                  الرئيسية
-                </Link>
-              </li>
-              <li>
-                <Link href="/products" className="text-sm hover:text-primary-400 transition-colors">
-                  المنتجات
-                </Link>
-              </li>
-              <li>
-                <Link href="/cart" className="text-sm hover:text-primary-400 transition-colors">
-                  السلة
-                </Link>
-              </li>
+            <h4 className="text-white font-semibold mb-4">Navigation</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/" className="text-gray-400 hover:text-primary-400 transition-colors">Accueil</Link></li>
+              <li><Link href="/products" className="text-gray-400 hover:text-primary-400 transition-colors">Produits</Link></li>
+              <li><Link href="/checkout" className="text-gray-400 hover:text-primary-400 transition-colors">Panier</Link></li>
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h3 className="text-white font-semibold mb-4">تواصل معنا</h3>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-2 text-sm">
+            <h4 className="text-white font-semibold mb-4">Contact</h4>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-center gap-2 text-gray-400">
                 <Phone className="h-4 w-4 text-primary-400" />
-                <span dir="ltr">+216 12 345 678</span>
+                +216 12 345 678
               </li>
-              <li className="flex items-center gap-2 text-sm">
+              <li className="flex items-center gap-2 text-gray-400">
                 <Mail className="h-4 w-4 text-primary-400" />
-                <span dir="ltr">support@matjarna.com</span>
-              </li>
-              <li className="flex items-start gap-2 text-sm">
-                <MapPin className="h-4 w-4 text-primary-400 mt-0.5" />
-                <span>شارع التجارة، المدينة</span>
+                support@dunesdor.tn
               </li>
             </ul>
           </div>
-
-          {/* Support */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">الدعم</h3>
-            <p className="text-sm text-gray-400">
-              نحن هنا لمساعدتك. تواصل معنا لأي استفسار.
-            </p>
-          </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-8">
-          <div className="flex flex-col items-center gap-4">
-            <Link 
-              href="/store-admin-panel/login"
-              className="px-6 py-2 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-            >
-              دخول المسؤول
-            </Link>
-            <p className="text-sm text-gray-500">&copy; {new Date().getFullYear()} متجرنا. جميع الحقوق محفوظة.</p>
-          </div>
+        {/* Bottom Bar */}
+        <div className="border-t border-gray-800 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+          <p>&copy; {new Date().getFullYear()} Dunes d'Or. Tous droits réservés.</p>
+          <Link href="/store-admin-panel/login" className="hover:text-primary-400 transition-colors">
+            Admin
+          </Link>
         </div>
       </div>
     </footer>
