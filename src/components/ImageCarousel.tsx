@@ -44,7 +44,7 @@ export default function ImageCarousel({ images, autoPlayInterval = 3000 }: Image
 
   if (images.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-[60px] sm:pt-[72px] pb-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-[32px] sm:pt-[40px] pb-2">
         <div className="w-full aspect-[16/9] sm:aspect-[21/9] md:aspect-[3/1] bg-gray-200 animate-pulse rounded-lg flex items-center justify-center">
           <div className="text-gray-400 text-sm">Chargement...</div>
         </div>
@@ -53,7 +53,7 @@ export default function ImageCarousel({ images, autoPlayInterval = 3000 }: Image
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-[60px] sm:pt-[72px] pb-2">
+    <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-[32px] sm:pt-[40px] pb-2">
       <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] md:aspect-[3/1] overflow-hidden bg-gray-100 rounded-lg">
         {images.map((img, index) => (
           <div

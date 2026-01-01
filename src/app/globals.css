@@ -97,13 +97,13 @@
 .animate-scroll-infinite {
   display: flex;
   width: max-content;
-  animation: scroll-infinite 15s linear infinite;
+  animation: scroll-infinite 8s linear infinite;
   will-change: transform;
 }
 
 @media (min-width: 768px) {
   .animate-scroll-infinite {
-    animation-duration: 30s;
+    animation-duration: 12s;
   }
 }
 

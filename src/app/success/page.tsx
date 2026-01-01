@@ -3,11 +3,16 @@
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, Package, Phone, ArrowRight } from 'lucide-react'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 
 function SuccessContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('order')
+
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-16">

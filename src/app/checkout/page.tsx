@@ -3,8 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
-import { ArrowLeft, Loader2, CheckCircle, Plus, Minus, Trash2 } from 'lucide-react'
-import Image from 'next/image'
+import { ArrowLeft, Loader2, CheckCircle, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { formatOptionsForDisplay } from '@/components/DynamicFormField'
 
@@ -209,228 +208,196 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
+      {/* Compact Order Summary - At Top */}
+      <div className="bg-primary-600 text-white rounded-xl p-4 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-semibold">🛒 ملخص الطلب ({items.length} منتج)</h2>
+          <span className="text-xl font-bold">{getCartTotal().toFixed(2)} د.ت</span>
+        </div>
+        
+        {/* Compact items list */}
+        <div className="space-y-2 max-h-40 overflow-y-auto">
+          {items.map(item => {
+            const optionsList = formatOptionsForDisplay(item.options || {})
+            return (
+              <div key={item.optionsKey} className="flex items-center justify-between bg-white/10 rounded-lg px-3 py-2 text-sm">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium truncate">{item.name}</span>
+                    <span className="text-white/70">×{item.quantity}</span>
+                  </div>
+                  {optionsList.length > 0 && (
+                    <div className="text-xs text-white/70 mt-0.5 flex flex-wrap gap-1">
+                      {optionsList.map((opt, idx) => (
+                        <span key={idx} className="bg-white/20 px-1.5 py-0.5 rounded">{opt}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mr-2">
+                  <span className="font-semibold whitespace-nowrap">{(item.price * item.quantity).toFixed(2)} د.ت</span>
+                  <button
+                    onClick={() => removeFromCart(item.optionsKey)}
+                    className="p-1 hover:bg-white/20 rounded transition"
+                    title="حذف"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+        
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/20 text-sm">
+          <span>التوصيل: <span className="text-green-300">مجاني</span></span>
+          <Link href="/products" className="text-white/80 hover:text-white underline text-xs">
+            + إضافة منتجات
+          </Link>
+        </div>
+      </div>
+
+      {/* Back Link */}
       <Link
         href="/products"
-        className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-8"
+        className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-4 text-sm"
       >
-        <ArrowLeft className="h-4 w-4 ml-2" />
+        <ArrowLeft className="h-4 w-4 ml-1" />
         متابعة التسوق
       </Link>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">إتمام الشراء</h1>
+      {/* Customer Form - Clean & Compact */}
+      <div className="bg-white rounded-xl shadow-sm p-5">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">📍 معلومات التوصيل</h2>
 
-      <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-        {/* Customer Form */}
-        <div className="lg:col-span-7">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">معلومات التوصيل</h2>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label htmlFor="customer_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  الاسم الكامل *
-                </label>
-                <input
-                  type="text"
-                  id="customer_name"
-                  name="customer_name"
-                  value={formData.customer_name}
-                  onChange={handleChange}
-                  className={`input-field ${errors.customer_name ? 'border-red-500' : ''}`}
-                  placeholder="أدخل اسمك الكامل"
-                />
-                {errors.customer_name && (
-                  <p className="text-red-500 text-sm mt-1">{errors.customer_name}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  رقم الهاتف *
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className={`input-field ${errors.phone ? 'border-red-500' : ''}`}
-                  placeholder="+216 12 345 678"
-                  dir="ltr"
-                />
-                {errors.phone && (
-                  <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-                  المدينة *
-                </label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className={`input-field ${errors.city ? 'border-red-500' : ''}`}
-                  placeholder="أدخل مدينتك"
-                />
-                {errors.city && (
-                  <p className="text-red-500 text-sm mt-1">{errors.city}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                  عنوان التوصيل *
-                </label>
-                <textarea
-                  id="address"
-                  name="address"
-                  rows={3}
-                  value={formData.address}
-                  onChange={handleChange}
-                  className={`input-field ${errors.address ? 'border-red-500' : ''}`}
-                  placeholder="أدخل عنوان التوصيل الكامل"
-                />
-                {errors.address && (
-                  <p className="text-red-500 text-sm mt-1">{errors.address}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
-                  ملاحظات الطلب (اختياري)
-                </label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  rows={2}
-                  value={formData.notes}
-                  onChange={handleChange}
-                  className="input-field"
-                  placeholder="أي تعليمات خاصة للتوصيل"
-                />
-              </div>
-
-              <div className="bg-amber-50 text-amber-800 p-4 rounded-lg">
-                <p className="font-medium">💵 الدفع عند الاستلام</p>
-                <p className="text-sm mt-1">
-                  لا يتطلب دفع الآن. ادفع نقداً عند استلام طلبك.
-                </p>
-              </div>
-
-              {errorMessage && (
-                <div className="bg-red-50 text-red-700 p-4 rounded-lg border border-red-200">
-                  <p className="font-medium">❌ {errorMessage}</p>
-                  <p className="text-sm mt-1">يرجى المحاولة مرة أخرى أو التواصل معنا.</p>
-                </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="customer_name" className="block text-sm font-medium text-gray-700 mb-1">
+                الاسم الكامل *
+              </label>
+              <input
+                type="text"
+                id="customer_name"
+                name="customer_name"
+                value={formData.customer_name}
+                onChange={handleChange}
+                className={`input-field ${errors.customer_name ? 'border-red-500' : ''}`}
+                placeholder="أدخل اسمك"
+              />
+              {errors.customer_name && (
+                <p className="text-red-500 text-xs mt-1">{errors.customer_name}</p>
               )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary w-full flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    جاري المعالجة...
-                  </>
-                ) : (
-                  'تأكيد الطلب'
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Order Summary */}
-        <div className="lg:col-span-5 mt-8 lg:mt-0">
-          <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">ملخص الطلب</h2>
-
-            <div className="divide-y max-h-80 overflow-y-auto">
-              {items.map(item => {
-                const optionsList = formatOptionsForDisplay(item.options || {})
-                return (
-                  <div key={item.optionsKey} className="py-4 flex gap-3">
-                    <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                      <Image
-                        src={item.image || '/placeholder.png'}
-                        alt={item.name}
-                        fill
-                        sizes="80px"
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="font-medium text-gray-900">{item.name}</p>
-                          {optionsList.length > 0 && (
-                            <div className="text-xs text-gray-500 mt-0.5">
-                              {optionsList.map((opt, idx) => (
-                                <span key={idx} className="block">{opt}</span>
-                              ))}
-                            </div>
-                          )}
-                          <p className="text-sm text-gray-500 mt-1">{item.price.toFixed(2)} د.ت للقطعة</p>
-                        </div>
-                        <button
-                          onClick={() => removeFromCart(item.optionsKey)}
-                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition"
-                          title="حذف"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                      
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-center gap-1 bg-gray-100 rounded-lg">
-                          <button
-                            onClick={() => updateQuantity(item.optionsKey, item.quantity - 1)}
-                            className="p-2 hover:bg-gray-200 rounded-lg transition"
-                            disabled={item.quantity <= 1}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </button>
-                          <span className="w-8 text-center font-medium">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.optionsKey, item.quantity + 1)}
-                            className="p-2 hover:bg-gray-200 rounded-lg transition"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </button>
-                        </div>
-                        <p className="font-semibold text-primary-600">
-                          {(item.price * item.quantity).toFixed(2)} د.ت
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
             </div>
 
-            <div className="border-t mt-4 pt-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">المجموع الفرعي</span>
-                <span>{getCartTotal().toFixed(2)} د.ت</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">التوصيل</span>
-                <span className="text-green-600">مجاني</span>
-              </div>
-              <div className="flex justify-between text-lg font-semibold pt-2 border-t">
-                <span>المجموع</span>
-                <span className="text-primary-600">{getCartTotal().toFixed(2)} د.ت</span>
-              </div>
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                رقم الهاتف *
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className={`input-field ${errors.phone ? 'border-red-500' : ''}`}
+                placeholder="+216 12 345 678"
+                dir="ltr"
+              />
+              {errors.phone && (
+                <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+              )}
             </div>
           </div>
-        </div>
+
+          <div>
+            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+              المدينة *
+            </label>
+            <input
+              type="text"
+              id="city"
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              className={`input-field ${errors.city ? 'border-red-500' : ''}`}
+              placeholder="أدخل مدينتك"
+            />
+            {errors.city && (
+              <p className="text-red-500 text-xs mt-1">{errors.city}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+              عنوان التوصيل *
+            </label>
+            <textarea
+              id="address"
+              name="address"
+              rows={2}
+              value={formData.address}
+              onChange={handleChange}
+              className={`input-field ${errors.address ? 'border-red-500' : ''}`}
+              placeholder="أدخل عنوان التوصيل الكامل"
+            />
+            {errors.address && (
+              <p className="text-red-500 text-xs mt-1">{errors.address}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+              ملاحظات (اختياري)
+            </label>
+            <input
+              type="text"
+              id="notes"
+              name="notes"
+              value={formData.notes}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="أي تعليمات خاصة للتوصيل"
+            />
+          </div>
+
+          <div className="bg-amber-50 text-amber-800 p-3 rounded-lg text-sm flex items-center gap-2">
+            <span className="text-lg">💵</span>
+            <div>
+              <p className="font-medium">الدفع عند الاستلام</p>
+              <p className="text-xs text-amber-700">ادفع نقداً عند استلام طلبك</p>
+            </div>
+          </div>
+
+          {errorMessage && (
+            <div className="bg-red-50 text-red-700 p-3 rounded-lg border border-red-200 text-sm">
+              <p className="font-medium">❌ {errorMessage}</p>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary w-full flex items-center justify-center gap-2 py-3 text-base"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                جاري المعالجة...
+              </>
+            ) : (
+              <>تأكيد الطلب - {getCartTotal().toFixed(2)} د.ت</>
+            )}
+          </button>
+        </form>
+      </div>
+
+      {/* Continue Shopping */}
+      <div className="mt-6 text-center">
+        <Link href="/products" className="text-primary-600 hover:text-primary-700 font-medium text-sm">
+          ← تصفح المزيد من المنتجات
+        </Link>
       </div>
     </div>
   )

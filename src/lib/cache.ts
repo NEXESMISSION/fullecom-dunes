@@ -8,11 +8,11 @@ interface CacheItem<T> {
 class DataCache {
   private cache: Map<string, CacheItem<any>> = new Map()
 
-  set<T>(key: string, data: T, ttlMinutes: number = 5) {
+  async set<T>(key: string, data: T, ttlSeconds: number = 300): Promise<void> {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-      ttl: ttlMinutes * 60 * 1000
+      ttl: ttlSeconds * 1000
     })
   }
 

@@ -15,6 +15,12 @@ const NAV_GROUPS = [
     ]
   },
   {
+    title: 'Configuration',
+    items: [
+      { href: '/store-admin-panel/types-config', label: 'Types de Produit', icon: '⚙️', desc: 'Champs personnalisés' },
+    ]
+  },
+  {
     title: 'Page d\'accueil',
     items: [
       { href: '/store-admin-panel/sections', label: 'Sections Produits', icon: '📑' },

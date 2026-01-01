@@ -34,6 +34,11 @@ export default function ProductDetailPage() {
   // Ensure we have at least a placeholder
   const displayImages = allImages.length > 0 ? allImages : ['/placeholder.png']
 
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   useEffect(() => {
     async function fetchProduct() {
       const productId = params.id as string
@@ -89,7 +94,17 @@ export default function ProductDetailPage() {
       const { isValid, errors } = validateProductOptions(formFields, productOptions)
       if (!isValid) {
         setOptionErrors(errors)
-        toast.error('Veuillez remplir toutes les options requises')
+        toast.error('Veuillez remplir toutes les options requises', {
+          duration: 2000,
+          position: 'bottom-center',
+          style: {
+            background: '#DC2626',
+            color: '#fff',
+            fontSize: '13px',
+            padding: '8px 16px',
+            borderRadius: '8px',
+          },
+        })
         return
       }
     }
@@ -131,7 +146,7 @@ export default function ProductDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[60px] sm:pt-[72px] pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[32px] sm:pt-[40px] pb-16">
           <div className="animate-pulse">
             <div className="h-5 w-40 bg-gray-200 rounded-full mb-8" />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
@@ -176,9 +191,9 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[60px] sm:pt-[72px] pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[32px] sm:pt-[40px] pb-16">
         {/* Breadcrumb */}
-        <nav className="mb-4">
+        <nav className="mb-2">
           <Link
             href="/products"
             className="inline-flex items-center gap-2 text-gray-500 hover:text-primary-600 text-sm font-medium transition-colors group"

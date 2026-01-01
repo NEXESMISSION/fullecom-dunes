@@ -17,6 +17,12 @@ export default function ProductsPage() {
     image: '', images: [] as string[], product_type_id: '', is_active: true
   })
   const [newImageUrl, setNewImageUrl] = useState('')
+  
+  // Filters
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterCategory, setFilterCategory] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all') // all, active, inactive
+  const [filterStock, setFilterStock] = useState('all') // all, in-stock, out-of-stock
 
   useEffect(() => {
     fetchProducts()
@@ -100,22 +106,111 @@ export default function ProductsPage() {
     }
   }
 
+  // Filter products
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         (p.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory = !filterCategory || p.product_type_id === filterCategory
+    const matchesStatus = filterStatus === 'all' || 
+                         (filterStatus === 'active' && p.is_active) || 
+                         (filterStatus === 'inactive' && !p.is_active)
+    const matchesStock = filterStock === 'all' || 
+                        (filterStock === 'in-stock' && p.stock > 0) || 
+                        (filterStock === 'out-of-stock' && p.stock === 0)
+    return matchesSearch && matchesCategory && matchesStatus && matchesStock
+  })
+
   if (loading) return <div className="animate-pulse grid grid-cols-2 lg:grid-cols-3 gap-4">{[1,2,3,4,5,6].map(i => <div key={i} className="bg-white rounded-lg h-48" />)}</div>
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Produits</h1>
+        <h1 className="text-2xl font-bold">Produits ({filteredProducts.length})</h1>
         <button onClick={() => openModal()} className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
           + Nouveau produit
         </button>
       </div>
 
-      {products.length === 0 ? (
-        <div className="bg-white p-8 text-center text-gray-500">Aucun produit</div>
+      {/* Filters Section */}
+      <div className="bg-white rounded-lg p-4 shadow-sm space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Search */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Rechercher</label>
+            <input
+              type="text"
+              placeholder="Nom ou description..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg text-sm"
+            />
+          </div>
+
+          {/* Category Filter */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Catégorie</label>
+            <select
+              value={filterCategory}
+              onChange={e => setFilterCategory(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg text-sm"
+            >
+              <option value="">Toutes les catégories</option>
+              {productTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Statut</label>
+            <select
+              value={filterStatus}
+              onChange={e => setFilterStatus(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg text-sm"
+            >
+              <option value="all">Tous</option>
+              <option value="active">Actifs</option>
+              <option value="inactive">Inactifs</option>
+            </select>
+          </div>
+
+          {/* Stock Filter */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Stock</label>
+            <select
+              value={filterStock}
+              onChange={e => setFilterStock(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg text-sm"
+            >
+              <option value="all">Tous</option>
+              <option value="in-stock">En stock</option>
+              <option value="out-of-stock">Épuisé</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Clear Filters */}
+        {(searchQuery || filterCategory || filterStatus !== 'all' || filterStock !== 'all') && (
+          <button
+            onClick={() => {
+              setSearchQuery('')
+              setFilterCategory('')
+              setFilterStatus('all')
+              setFilterStock('all')
+            }}
+            className="text-sm text-red-600 hover:text-red-700 font-medium"
+          >
+            ✕ Effacer les filtres
+          </button>
+        )}
+      </div>
+
+      {filteredProducts.length === 0 ? (
+        <div className="bg-white p-8 text-center text-gray-500">
+          {products.length === 0 ? 'Aucun produit' : 'Aucun produit ne correspond aux filtres'}
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map((p) => (
+          {filteredProducts.map((p) => (
             <div key={p.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
               <div className="aspect-video bg-gray-100 relative">
                 {p.image ? (

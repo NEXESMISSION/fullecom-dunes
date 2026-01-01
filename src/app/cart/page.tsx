@@ -7,6 +7,7 @@ export default function CartPage() {
   const router = useRouter()
 
   useEffect(() => {
+    window.scrollTo(0, 0)
     router.replace('/checkout')
   }, [router])
 

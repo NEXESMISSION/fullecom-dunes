@@ -230,7 +230,7 @@ export default function ProductsPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <section className="flex-1 pt-[60px] sm:pt-[72px] pb-4">
+      <section className="flex-1 pt-[32px] sm:pt-[40px] pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex gap-6">
             {/* Sidebar - Desktop */}
