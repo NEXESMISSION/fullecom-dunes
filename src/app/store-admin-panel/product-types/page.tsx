@@ -10,14 +10,25 @@ interface FormField {
   id: string; label: string; type: string; required: boolean; options?: string[]; placeholder?: string
 }
 
+interface ProductType {
+  id: string
+  name: string
+  slug: string
+  image: string | null
+  parent_id: string | null
+  form_schema: { fields: FormField[] } | null
+  created_at: string
+}
+
 export default function ProductTypesPage() {
-  const [types, setTypes] = useState<any[]>([])
+  const [types, setTypes] = useState<ProductType[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [name, setName] = useState('')
   const [image, setImage] = useState('')
+  const [parentId, setParentId] = useState<string | null>(null)
   const [fields, setFields] = useState<FormField[]>([])
 
   useEffect(() => {
@@ -25,21 +36,36 @@ export default function ProductTypesPage() {
   }, [])
 
   async function fetchTypes() {
-    const { data } = await supabase.from('product_types').select('*').order('created_at')
+    const { data } = await supabase.from('product_types').select('*').order('name')
     setTypes(data || [])
     setLoading(false)
   }
 
-  function openModal(type?: any) {
+  // Build tree structure for display
+  function buildTree(items: ProductType[], parentId: string | null = null): ProductType[] {
+    return items
+      .filter(item => item.parent_id === parentId)
+      .map(item => ({
+        ...item,
+        children: buildTree(items, item.id)
+      }))
+  }
+
+  // Get parent categories (those without parent_id)
+  const parentCategories = types.filter(t => !t.parent_id)
+
+  function openModal(type?: ProductType) {
     if (type) {
       setEditingId(type.id)
       setName(type.name)
       setImage(type.image || '')
+      setParentId(type.parent_id)
       setFields(type.form_schema?.fields || [])
     } else {
       setEditingId(null)
       setName('')
       setImage('')
+      setParentId(null)
       setFields([])
     }
     setShowModal(true)
@@ -66,12 +92,19 @@ export default function ProductTypesPage() {
     try {
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
       const formSchema = { fields }
+      const data = { 
+        name, 
+        slug, 
+        image: image || null, 
+        parent_id: parentId || null,
+        form_schema: formSchema 
+      }
       if (editingId) {
-        const { error } = await supabase.from('product_types').update({ name, slug, image: image || null, form_schema: formSchema }).eq('id', editingId)
+        const { error } = await supabase.from('product_types').update(data).eq('id', editingId)
         if (error) throw error
         toast.success('Mis à jour')
       } else {
-        const { error } = await supabase.from('product_types').insert({ name, slug, image: image || null, form_schema: formSchema })
+        const { error } = await supabase.from('product_types').insert(data)
         if (error) throw error
         toast.success('Créé')
       }
@@ -116,28 +149,42 @@ export default function ProductTypesPage() {
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Image</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Nom</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Parent</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Champs</th>
                 <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y">
-              {types.map((type) => (
-                <tr key={type.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    {type.image ? (
-                      <img src={type.image} alt={type.name} className="w-12 h-12 object-cover rounded" />
-                    ) : (
-                      <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">-</div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 font-medium">{type.name}</td>
-                  <td className="px-4 py-3 text-gray-500">{type.form_schema?.fields?.length || 0} champ(s)</td>
-                  <td className="px-4 py-3 text-right">
-                    <button onClick={() => openModal(type)} className="text-primary-600 hover:underline mr-3">Modifier</button>
-                    <button onClick={() => deleteType(type.id)} className="text-red-600 hover:underline">Supprimer</button>
-                  </td>
-                </tr>
-              ))}
+              {types.map((type) => {
+                const parentType = type.parent_id ? types.find(t => t.id === type.parent_id) : null
+                return (
+                  <tr key={type.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      {type.image ? (
+                        <img src={type.image} alt={type.name} className="w-12 h-12 object-cover rounded" />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">-</div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 font-medium">
+                      {type.parent_id && <span className="text-gray-400 mr-2">└</span>}
+                      {type.name}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {parentType ? (
+                        <span className="px-2 py-1 bg-gray-100 rounded text-xs">{parentType.name}</span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">{type.form_schema?.fields?.length || 0} champ(s)</td>
+                    <td className="px-4 py-3 text-right">
+                      <button onClick={() => openModal(type)} className="text-primary-600 hover:underline mr-3">Modifier</button>
+                      <button onClick={() => deleteType(type.id)} className="text-red-600 hover:underline">Supprimer</button>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -154,6 +201,21 @@ export default function ProductTypesPage() {
               <div>
                 <label className="block text-sm font-medium mb-1">Nom *</label>
                 <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="Ex: Vêtements" />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Catégorie parente (optionnel)</label>
+                <select 
+                  value={parentId || ''} 
+                  onChange={e => setParentId(e.target.value || null)}
+                  className="w-full px-3 py-2 border rounded-lg"
+                >
+                  <option value="">-- Aucune (catégorie principale) --</option>
+                  {types.filter(t => t.id !== editingId && !t.parent_id).map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Sélectionnez une catégorie parente pour créer une sous-catégorie</p>
               </div>
 
               <div>
