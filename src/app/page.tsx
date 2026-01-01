@@ -343,109 +343,50 @@ export default function HomePage() {
         <ImageCarousel images={carouselImages} autoPlayInterval={5000} />
       </section>
 
-      {/* Categories Grid with Images - Horizontal scroll on mobile */}
-      {landingConfig.showCategories && (
-        <section className="py-6 sm:py-8 bg-white">
-          <div className="max-w-7xl mx-auto px-8">
-            <h2 className="text-base sm:text-xl font-bold text-gray-900 mb-4">{landingConfig.categoriesTitle}</h2>
-            {!dataLoaded ? (
-              <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide sm:grid sm:grid-cols-3 lg:grid-cols-4 sm:gap-4 sm:overflow-visible sm:pb-0">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="flex-shrink-0 w-36 sm:w-auto aspect-square bg-gray-200 animate-pulse rounded-lg" />
-                ))}
-              </div>
-            ) : categories.length > 0 ? (
-              <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide sm:grid sm:grid-cols-3 lg:grid-cols-4 sm:gap-4 sm:overflow-visible sm:pb-0">
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/products?category=${encodeURIComponent(cat.name)}`}
-                    className="group relative flex-shrink-0 w-36 sm:w-auto aspect-square overflow-hidden bg-gray-100"
-                  >
-                    {cat.image ? (
-                      <img
-                        src={cat.image}
-                        alt={cat.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-primary-400 to-primary-600" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
-                      <h3 className="text-white font-bold text-sm sm:text-lg">{cat.name}</h3>
+      {/* Auto-sliding Categories Section - Infinite Loop */}
+      {categories.length > 0 && (
+        <section className="py-3 sm:py-4 bg-gray-50 overflow-hidden animate-fade-in-up">
+          <div className="relative">
+            {/* Gradient fades on sides */}
+            <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-gray-50 to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-gray-50 to-transparent z-10 pointer-events-none" />
+            
+            {/* Sliding container */}
+            <div className="flex animate-scroll-infinite">
+              {[...categories, ...categories, ...categories].map((cat, index) => (
+                <Link
+                  key={`${cat.id}-${index}`}
+                  href={`/products?category=${encodeURIComponent(cat.name)}`}
+                  className="flex-shrink-0 mx-1.5 sm:mx-2 group"
+                >
+                  <div className="w-20 sm:w-28 bg-white rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden border border-gray-100">
+                    <div className="aspect-square relative overflow-hidden">
+                      {cat.image ? (
+                        <img
+                          src={cat.image}
+                          alt={cat.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
+                          <span className="text-2xl sm:text-3xl">📦</span>
+                        </div>
+                      )}
                     </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-8">Aucune catégorie - Ajoutez-les depuis le panneau d'administration</p>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Promo Images Slider - Single row horizontal scroll */}
-      {landingConfig.showPromoImages && (
-        <section className="py-6 sm:py-8 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-8">
-            <h2 className="text-base sm:text-xl font-bold text-gray-900 mb-4">{landingConfig.promoTitle}</h2>
-            {!dataLoaded ? (
-              <div className="flex gap-3 overflow-x-auto scrollbar-hide">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="flex-shrink-0 w-28 sm:w-32 aspect-square bg-gray-200 animate-pulse rounded-lg" />
-                ))}
-              </div>
-            ) : promoImages.length > 0 ? (
-              <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-                {promoImages.map((img) => (
-                  <Link
-                    key={img.id}
-                    href={img.link || '#'}
-                    className="group relative flex-shrink-0 w-28 sm:w-36 lg:w-40 aspect-square overflow-hidden bg-gray-100"
-                  >
-                    <img
-                      src={img.image}
-                      alt={img.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3">
-                      <h3 className="text-white font-semibold text-xs sm:text-sm line-clamp-2">{img.title}</h3>
+                    <div className="p-1.5 sm:p-2 text-center">
+                      <h3 className="text-[10px] sm:text-sm font-medium text-gray-800 truncate">{cat.name}</h3>
                     </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-8">Aucune image promotionnelle - Ajoutez-les depuis le panneau d'administration</p>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Full Width Banner - Desktop Only - Admin Controlled */}
-      {siteContent.promoBannerImage && (
-        <section className="hidden md:block py-4">
-          <div className="max-w-7xl mx-auto px-8">
-            <div className="relative h-32 lg:h-40 overflow-hidden rounded-xl">
-              <img 
-                src={siteContent.promoBannerImage || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1400&h=300&fit=crop'}
-                alt={siteContent.promoBannerTitle || 'Offres spéciales'}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-transparent flex items-center">
-                <div className="px-8">
-                  <h3 className="text-white text-2xl font-bold">{siteContent.promoBannerTitle || 'Offres Spéciales'}</h3>
-                  <p className="text-white/80 text-sm mt-1">{siteContent.promoBannerSubtitle || 'Découvrez nos meilleures offres du moment'}</p>
-                </div>
-              </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Dynamic Product Sections from Admin */}
-      {landingSections.length > 0 ? (
+      {/* Dynamic Product Sections from Admin Only */}
+      {landingSections.length > 0 && (
         <>
           {landingSections.map((section) => (
             section.products && section.products.length > 0 && (
@@ -460,24 +401,6 @@ export default function HomePage() {
               />
             )
           ))}
-
-          {/* See All Button */}
-          <div className="py-6 text-center">
-            <Link href="/products" className="btn-primary inline-block">
-              Voir Tous les Produits
-              <ArrowRight className="inline-block mr-2 h-4 w-4 rotate-180" />
-            </Link>
-          </div>
-        </>
-      ) : landingConfig.showProducts && products.length > 0 && (
-        <>
-          {/* Fallback: Show latest products if no sections configured */}
-          <ProductSlider
-            title={landingConfig.productsTitle || 'Produits Vedettes'}
-            subtitle="Découvrez nos produits"
-            products={products}
-            backgroundColor="bg-white"
-          />
 
           {/* See All Button */}
           <div className="py-6 text-center">

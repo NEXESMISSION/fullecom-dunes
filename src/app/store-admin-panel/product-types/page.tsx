@@ -134,59 +134,92 @@ export default function ProductTypesPage() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Types de produits</h1>
+        <h1 className="text-2xl font-bold">Catégories</h1>
         <button onClick={() => openModal()} className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
           + Ajouter
         </button>
       </div>
 
       {types.length === 0 ? (
-        <div className="bg-white rounded-lg p-8 text-center text-gray-500">Aucun type</div>
+        <div className="bg-white rounded-lg p-8 text-center text-gray-500">Aucune catégorie</div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Image</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Nom</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Parent</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Champs</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {types.map((type) => {
-                const parentType = type.parent_id ? types.find(t => t.id === type.parent_id) : null
-                return (
-                  <tr key={type.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      {type.image ? (
-                        <img src={type.image} alt={type.name} className="w-12 h-12 object-cover rounded" />
-                      ) : (
-                        <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">-</div>
+        <div className="space-y-4">
+          {/* Main Categories */}
+          {types.filter(t => !t.parent_id).map((mainCat) => {
+            const getDirectChildren = (parentId: string) => types.filter(t => t.parent_id === parentId)
+            const countAllChildren = (parentId: string): number => {
+              const direct = getDirectChildren(parentId)
+              return direct.length + direct.reduce((sum, child) => sum + countAllChildren(child.id), 0)
+            }
+            const subCategories = getDirectChildren(mainCat.id)
+            
+            // Recursive component for rendering subcategories at any depth
+            const renderSubcategory = (cat: ProductType, level: number) => {
+              const children = getDirectChildren(cat.id)
+              const paddingLeft = 24 + (level * 24)
+              const icons = ['📁', '📄', '•']
+              const icon = icons[Math.min(level, icons.length - 1)]
+              
+              return (
+                <div key={cat.id}>
+                  <div 
+                    className="flex items-center gap-3 py-2.5 hover:bg-gray-50 transition border-b border-gray-50"
+                    style={{ paddingLeft: `${paddingLeft}px` }}
+                  >
+                    <span className="text-gray-300 text-sm">{level === 0 ? '├' : '└'}</span>
+                    <span className="text-sm">{icon}</span>
+                    <span className={`flex-1 ${level === 0 ? 'font-medium text-gray-800' : 'text-gray-600 text-sm'}`}>
+                      {cat.name}
+                      {children.length > 0 && (
+                        <span className="ml-2 text-xs text-gray-400">({children.length})</span>
                       )}
-                    </td>
-                    <td className="px-4 py-3 font-medium">
-                      {type.parent_id && <span className="text-gray-400 mr-2">└</span>}
-                      {type.name}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">
-                      {parentType ? (
-                        <span className="px-2 py-1 bg-gray-100 rounded text-xs">{parentType.name}</span>
-                      ) : (
-                        <span className="text-gray-400 text-xs">-</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">{type.form_schema?.fields?.length || 0} champ(s)</td>
-                    <td className="px-4 py-3 text-right">
-                      <button onClick={() => openModal(type)} className="text-primary-600 hover:underline mr-3">Modifier</button>
-                      <button onClick={() => deleteType(type.id)} className="text-red-600 hover:underline">Supprimer</button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                    </span>
+                    <div className="flex items-center gap-3 pr-4">
+                      <button onClick={() => openModal(cat)} className="text-xs text-primary-600 hover:underline">Modifier</button>
+                      <button onClick={() => deleteType(cat.id)} className="text-xs text-red-500 hover:underline">Suppr.</button>
+                    </div>
+                  </div>
+                  {children.map(child => renderSubcategory(child, level + 1))}
+                </div>
+              )
+            }
+            
+            return (
+              <div key={mainCat.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                {/* Main Category Header */}
+                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-primary-50 to-white">
+                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                    {mainCat.image ? (
+                      <img src={mainCat.image} alt={mainCat.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-2xl">📂</div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-900 text-lg">{mainCat.name}</h3>
+                    <p className="text-sm text-gray-500">
+                      {countAllChildren(mainCat.id)} sous-catégorie{countAllChildren(mainCat.id) !== 1 ? 's' : ''} (total)
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => openModal(mainCat)} className="px-3 py-1.5 text-sm bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition">
+                      Modifier
+                    </button>
+                    <button onClick={() => deleteType(mainCat.id)} className="px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition">
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Subcategories - Recursive */}
+                {subCategories.length > 0 && (
+                  <div className="border-t border-gray-100">
+                    {subCategories.map(sub => renderSubcategory(sub, 0))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
 

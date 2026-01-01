@@ -1,14 +1,23 @@
 -- =============================================
 -- COMPLETE DATABASE FIX - RUN THIS ENTIRE FILE
--- Copy all content and paste in Supabase SQL Editor
+-- Copy ALL content and paste in Supabase SQL Editor
+-- Last updated: January 1, 2026
+-- =============================================
+-- This SQL:
+-- 1. Adds 'images' array column to products table
+-- 2. Adds 'parent_id' to product_types for subcategories
+-- 3. Creates landing_sections table (for product sections)
+-- 4. Creates banners table (for carousel)
+-- 5. Removes unused tables (promo_images, site_settings)
 -- =============================================
 
 -- =============================================
 -- STEP 1: FIX PRODUCTS TABLE - ADD IMAGES ARRAY
+-- This fixes: "Could not find the 'images' column"
 -- =============================================
 
 -- Add images column (array of text) if it doesn't exist
-ALTER TABLE products ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';
+ALTER TABLE products ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT ARRAY[]::TEXT[];
 
 -- Migrate existing single image to images array
 UPDATE products 

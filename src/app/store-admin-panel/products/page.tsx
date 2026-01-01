@@ -180,51 +180,106 @@ export default function ProductsPage() {
                   {productTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Image principale</label>
-                <input type="url" value={form.image} onChange={e => setForm({...form, image: e.target.value})} className="w-full px-3 py-2 border rounded-lg" placeholder="https://..." />
-              </div>
-              
-              {/* Multiple Images */}
-              <div>
-                <label className="block text-sm font-medium mb-1">Images supplémentaires</label>
-                <div className="flex gap-2 mb-2">
-                  <input 
-                    type="url" 
-                    value={newImageUrl} 
-                    onChange={e => setNewImageUrl(e.target.value)} 
-                    className="flex-1 px-3 py-2 border rounded-lg text-sm" 
-                    placeholder="https://..." 
-                  />
-                  <button 
-                    type="button"
-                    onClick={() => {
-                      if (newImageUrl.trim()) {
-                        setForm({...form, images: [...form.images, newImageUrl.trim()]})
-                        setNewImageUrl('')
-                      }
-                    }}
-                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm"
-                  >
-                    +
-                  </button>
+              {/* Images Section */}
+              <div className="space-y-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold text-gray-700">Images du produit</label>
+                  <span className="text-xs text-gray-500">{form.images.length + (form.image ? 1 : 0)} image(s)</span>
                 </div>
-                {form.images.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {form.images.map((img, i) => (
-                      <div key={i} className="relative group">
-                        <img src={img} alt={`Image ${i+1}`} className="w-16 h-16 object-cover rounded border" />
-                        <button
-                          type="button"
-                          onClick={() => setForm({...form, images: form.images.filter((_, idx) => idx !== i)})}
-                          className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
+
+                {/* Image principale */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Image principale *</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="url" 
+                      value={form.image} 
+                      onChange={e => setForm({...form, image: e.target.value})} 
+                      className="flex-1 px-3 py-2 border rounded-lg text-sm" 
+                      placeholder="https://exemple.com/image.jpg" 
+                    />
+                    {form.image && (
+                      <img src={form.image} alt="Principale" className="w-10 h-10 object-cover rounded border" />
+                    )}
                   </div>
-                )}
+                </div>
+
+                {/* Images supplémentaires */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Images supplémentaires</label>
+                  <div className="flex gap-2 mb-3">
+                    <input 
+                      type="url" 
+                      value={newImageUrl} 
+                      onChange={e => setNewImageUrl(e.target.value)} 
+                      className="flex-1 px-3 py-2 border rounded-lg text-sm" 
+                      placeholder="https://exemple.com/image2.jpg"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          if (newImageUrl.trim()) {
+                            setForm({...form, images: [...form.images, newImageUrl.trim()]})
+                            setNewImageUrl('')
+                          }
+                        }
+                      }}
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        if (newImageUrl.trim()) {
+                          setForm({...form, images: [...form.images, newImageUrl.trim()]})
+                          setNewImageUrl('')
+                        }
+                      }}
+                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Ajouter
+                    </button>
+                  </div>
+                  
+                  {/* Grid des images */}
+                  {form.images.length > 0 ? (
+                    <div className="grid grid-cols-4 gap-2">
+                      {form.images.map((img, i) => (
+                        <div key={i} className="relative group aspect-square bg-white rounded-lg border overflow-hidden">
+                          <img src={img} alt={`Image ${i+1}`} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                // Move to main image
+                                const oldMain = form.image
+                                setForm({
+                                  ...form, 
+                                  image: img, 
+                                  images: form.images.filter((_, idx) => idx !== i).concat(oldMain ? [oldMain] : [])
+                                })
+                              }}
+                              className="p-1.5 bg-white rounded text-xs hover:bg-gray-100"
+                              title="Définir comme principale"
+                            >
+                              ⭐
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setForm({...form, images: form.images.filter((_, idx) => idx !== i)})}
+                              className="p-1.5 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                              title="Supprimer"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1 rounded">{i+1}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 text-center py-4 border-2 border-dashed rounded-lg">
+                      Ajoutez des images supplémentaires pour la galerie
+                    </p>
+                  )}
+                </div>
               </div>
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={form.is_active} onChange={e => setForm({...form, is_active: e.target.checked})} className="rounded" />

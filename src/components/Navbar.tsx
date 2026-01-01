@@ -21,45 +21,62 @@ interface SiteContent {
   announcementText?: string
 }
 
-// Recursive component for rendering category items with unlimited depth
-function CategoryMenuItem({ 
-  category, 
-  level = 0,
-  onNavigate 
-}: { 
-  category: Category
-  level?: number
-  onNavigate?: () => void
-}) {
+// Category Card Component for mega menu with visual hierarchy
+function CategoryCard({ category }: { category: Category }) {
   const hasChildren = category.children && category.children.length > 0
   
   return (
-    <div className="relative group/item">
+    <div className="bg-gray-50 rounded-xl p-4 hover:shadow-md transition-all">
+      {/* Main Category - Large bold title */}
       <Link
         href={`/products?category=${encodeURIComponent(category.name)}`}
-        onClick={onNavigate}
-        className={`flex items-center justify-between gap-2 px-3 py-2 text-sm transition-colors rounded ${
-          level === 0 
-            ? 'font-semibold text-gray-900 hover:text-primary-600 hover:bg-gray-50' 
-            : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50'
-        }`}
+        className="flex items-center gap-2 font-bold text-gray-900 hover:text-primary-600 transition-colors mb-3 pb-2 border-b border-gray-200"
       >
-        <span className="truncate">{category.name}</span>
-        {hasChildren && <ChevronRight className="h-3 w-3 flex-shrink-0" />}
+        <span className="w-2 h-2 bg-primary-600 rounded-full"></span>
+        {category.name}
       </Link>
       
       {hasChildren && (
-        <div className="absolute left-full top-0 ml-0 opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-150" style={{ zIndex: 9999 }}>
-          <div className="bg-white shadow-2xl border rounded-lg py-2 min-w-52 max-h-[400px] overflow-y-auto">
-            {category.children!.map((child) => (
-              <CategoryMenuItem 
-                key={child.id} 
-                category={child} 
-                level={level + 1}
-                onNavigate={onNavigate}
-              />
-            ))}
-          </div>
+        <div className="space-y-2">
+          {category.children!.slice(0, 5).map((sub) => (
+            <div key={sub.id}>
+              {/* Subcategory - Medium with icon */}
+              <Link
+                href={`/products?category=${encodeURIComponent(sub.name)}`}
+                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors"
+              >
+                <ChevronRight className="w-3 h-3 text-gray-400" />
+                {sub.name}
+              </Link>
+              
+              {/* Sub-subcategories - Small, indented, lighter */}
+              {sub.children && sub.children.length > 0 && (
+                <div className="ml-5 mt-1 space-y-0.5">
+                  {sub.children.slice(0, 3).map((subsub) => (
+                    <Link
+                      key={subsub.id}
+                      href={`/products?category=${encodeURIComponent(subsub.name)}`}
+                      className="block text-xs text-gray-400 hover:text-primary-500 transition-colors pl-2 border-l border-gray-200"
+                    >
+                      {subsub.name}
+                    </Link>
+                  ))}
+                  {sub.children.length > 3 && (
+                    <span className="text-xs text-gray-300 pl-2">+{sub.children.length - 3} autres</span>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+          
+          {category.children!.length > 5 && (
+            <Link
+              href={`/products?category=${encodeURIComponent(category.name)}`}
+              className="block text-xs text-primary-600 hover:text-primary-700 font-medium mt-3 pt-2 border-t border-gray-200"
+            >
+              Voir tout ({category.children!.length}) →
+            </Link>
+          )}
         </div>
       )}
     </div>
@@ -319,129 +336,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Desktop Categories Bar - Single "All Categories" Button Only */}
-        <div className="hidden md:block border-t bg-white relative z-40 shadow-sm" style={{ overflow: 'visible' }}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ overflow: 'visible' }}>
-            <div className="flex items-center gap-4 py-2" style={{ overflow: 'visible' }}>
-              {/* All Categories Mega Menu */}
-              <div className="relative group/mega">
-                <button className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition whitespace-nowrap rounded-lg">
-                  <LayoutGrid className="h-4 w-4" />
-                  Toutes les Catégories
-                  <ChevronDown className="h-3 w-3 transition-transform group-hover/mega:rotate-180" />
-                </button>
-                
-                {/* Mega Menu Dropdown */}
-                <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover/mega:opacity-100 group-hover/mega:visible transition-all duration-200" style={{ zIndex: 9999 }}>
-                  <div className="bg-white shadow-2xl border rounded-xl p-4 min-w-[750px] max-h-[75vh] overflow-visible">
-                    {categoriesLoading ? (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="w-6 h-6 border-2 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
-                        <span className="ml-3 text-sm text-gray-500">Chargement...</span>
-                      </div>
-                    ) : categoriesError ? (
-                      <div className="flex items-center justify-center py-8 text-red-500">
-                        <AlertCircle className="h-5 w-5 mr-2" />
-                        <span className="text-sm">Erreur de chargement des catégories</span>
-                      </div>
-                    ) : categories.length === 0 ? (
-                      <div className="py-8 text-center text-gray-500 text-sm">
-                        Aucune catégorie disponible
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-3 gap-4" style={{ overflow: 'visible' }}>
-                        {categories.map((category) => (
-                          <div key={category.id} className="min-w-0" style={{ overflow: 'visible' }}>
-                            <Link
-                              href={`/products?category=${encodeURIComponent(category.name)}`}
-                              className="block font-semibold text-gray-900 hover:text-primary-600 transition-colors py-2 border-b border-gray-100 mb-2 truncate"
-                            >
-                              {category.name}
-                            </Link>
-                            {category.children && category.children.length > 0 && (
-                              <div className="space-y-0.5" style={{ overflow: 'visible' }}>
-                                {category.children.map((sub) => (
-                                  <CategoryMenuItem 
-                                    key={sub.id} 
-                                    category={sub}
-                                    level={1}
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* View All Products Link */}
-                    <div className="mt-4 pt-4 border-t">
-                      <Link
-                        href="/products"
-                        className="block text-center py-2 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors"
-                      >
-                        Voir tous les produits →
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Category Links with Hover Dropdowns */}
-              <div className="flex items-center gap-1 overflow-visible">
-                {!categoriesLoading && categories.slice(0, 6).map((category) => (
-                  <div key={category.id} className="relative group/cat">
-                    <Link
-                      href={`/products?category=${encodeURIComponent(category.name)}`}
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-colors whitespace-nowrap"
-                    >
-                      {category.name}
-                      {category.children && category.children.length > 0 && (
-                        <ChevronDown className="h-3 w-3" />
-                      )}
-                    </Link>
-                    {/* Dropdown for subcategories */}
-                    {category.children && category.children.length > 0 && (
-                      <div className="absolute top-full left-0 pt-1 opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible transition-all duration-150 z-[100]">
-                        <div className="bg-white shadow-xl border rounded-lg py-2 min-w-52 max-h-96 overflow-y-auto">
-                          {category.children.map((sub) => (
-                            <div key={sub.id} className="relative group/sub">
-                              <Link
-                                href={`/products?category=${encodeURIComponent(sub.name)}`}
-                                className="flex items-center justify-between px-4 py-2 text-sm text-gray-600 hover:text-primary-600 hover:bg-gray-50 transition-colors"
-                              >
-                                {sub.name}
-                                {sub.children && sub.children.length > 0 && (
-                                  <ChevronRight className="h-3 w-3" />
-                                )}
-                              </Link>
-                              {/* Sub-subcategories */}
-                              {sub.children && sub.children.length > 0 && (
-                                <div className="absolute left-full top-0 ml-1 opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-150 z-[110]">
-                                  <div className="bg-white shadow-xl border rounded-lg py-2 min-w-48 max-h-80 overflow-y-auto">
-                                    {sub.children.map((subsub) => (
-                                      <Link
-                                        key={subsub.id}
-                                        href={`/products?category=${encodeURIComponent(subsub.name)}`}
-                                        className="block px-4 py-2 text-sm text-gray-600 hover:text-primary-600 hover:bg-gray-50 transition-colors"
-                                      >
-                                        {subsub.name}
-                                      </Link>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
@@ -535,25 +429,6 @@ export default function Navbar() {
         )}
       </nav>
 
-      {/* Mobile Categories Bar (below header) - Single button only */}
-      <div className="md:hidden fixed top-[88px] left-0 right-0 z-40 bg-white border-b shadow-sm">
-        <div className="flex items-center gap-2 px-3 py-2">
-          <button
-            onClick={() => setShowCategoriesPopup(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
-          >
-            <LayoutGrid className="h-4 w-4" />
-            Toutes les Catégories
-            <ChevronDown className="h-3 w-3" />
-          </button>
-          <Link
-            href="/products"
-            className="px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
-          >
-            Tous les Produits
-          </Link>
-        </div>
-      </div>
       
       {/* Categories Popup */}
       <CategoriesPopup 

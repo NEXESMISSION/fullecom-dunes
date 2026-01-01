@@ -83,3 +83,56 @@
     display: none;
   }
 }
+
+/* Infinite scroll animation for categories - seamless loop */
+@keyframes scroll-infinite {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+.animate-scroll-infinite {
+  display: flex;
+  width: max-content;
+  animation: scroll-infinite 15s linear infinite;
+  will-change: transform;
+}
+
+@media (min-width: 768px) {
+  .animate-scroll-infinite {
+    animation-duration: 30s;
+  }
+}
+
+.animate-scroll-infinite:hover {
+  animation-play-state: paused;
+}
+
+/* Fade in animation for content */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-fade-in-up-delay-1 {
+  animation: fadeInUp 0.5s ease-out 0.1s forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-up-delay-2 {
+  animation: fadeInUp 0.5s ease-out 0.2s forwards;
+  opacity: 0;
+}

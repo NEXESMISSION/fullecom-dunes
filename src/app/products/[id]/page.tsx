@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, Minus, Plus, ShoppingCart, Shield, Truck, CreditCard, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Minus, Plus, ShoppingCart, Shield, Truck, CreditCard, ChevronLeft, ChevronRight, Check, Star, Heart } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import Footer from '@/components/Footer'
 import { Product, ProductOptions, FormField } from '@/types'
@@ -21,14 +21,18 @@ export default function ProductDetailPage() {
   const [productOptions, setProductOptions] = useState<ProductOptions>({})
   const [optionErrors, setOptionErrors] = useState<{ [key: string]: string }>({})
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [isImageZoomed, setIsImageZoomed] = useState(false)
 
   const formFields: FormField[] = product?.product_type?.form_schema?.fields || []
   
-  // Get all images (combine image and images array)
+  // Get all images - prioritize images array, fallback to single image
   const allImages: string[] = product ? [
     ...(product.images && product.images.length > 0 ? product.images : []),
     ...(product.image && (!product.images || !product.images.includes(product.image)) ? [product.image] : [])
   ].filter(Boolean) : []
+
+  // Ensure we have at least a placeholder
+  const displayImages = allImages.length > 0 ? allImages : ['/placeholder.png']
 
   useEffect(() => {
     async function fetchProduct() {
@@ -98,6 +102,19 @@ export default function ProductDetailPage() {
       options: productOptions,
     }, quantity)
     
+    // Show success toast - small, fast, bottom position
+    toast.success('Ajouté au panier!', {
+      duration: 1500,
+      position: 'bottom-center',
+      style: {
+        background: '#002366',
+        color: '#fff',
+        fontSize: '13px',
+        padding: '8px 16px',
+        borderRadius: '8px',
+      },
+    })
+    
     // Reset options after adding
     setProductOptions({})
     setOptionErrors({})
@@ -106,18 +123,31 @@ export default function ProductDetailPage() {
 
   const isAddToCartDisabled = product?.stock === 0
 
+  // Calculate discount percentage
+  const discountPercent = product?.original_price && product.original_price > product.price 
+    ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
+    : 0
+
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 md:pt-36 pb-8">
-        <div className="animate-pulse">
-          <div className="h-6 w-32 bg-gray-200 rounded mb-8" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className="aspect-square bg-gray-200 rounded-xl" />
-            <div className="space-y-4">
-              <div className="h-4 w-24 bg-gray-200 rounded" />
-              <div className="h-8 w-3/4 bg-gray-200 rounded" />
-              <div className="h-6 w-32 bg-gray-200 rounded" />
-              <div className="h-24 bg-gray-200 rounded" />
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[60px] sm:pt-[72px] pb-16">
+          <div className="animate-pulse">
+            <div className="h-5 w-40 bg-gray-200 rounded-full mb-8" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+              <div className="space-y-4">
+                <div className="aspect-square bg-gray-200 rounded-2xl" />
+                <div className="flex gap-3">
+                  {[1,2,3,4].map(i => <div key={i} className="w-20 h-20 bg-gray-200 rounded-xl" />)}
+                </div>
+              </div>
+              <div className="space-y-6 py-4">
+                <div className="h-5 w-28 bg-gray-200 rounded-full" />
+                <div className="h-10 w-4/5 bg-gray-200 rounded-lg" />
+                <div className="h-8 w-40 bg-gray-200 rounded-lg" />
+                <div className="h-24 bg-gray-200 rounded-lg" />
+                <div className="h-14 bg-gray-200 rounded-xl" />
+              </div>
             </div>
           </div>
         </div>
@@ -127,161 +157,205 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 md:pt-36 pb-16 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Produit introuvable</h1>
-        <p className="text-gray-500 mb-8">Ce produit n'existe pas ou a été supprimé.</p>
-        <Link href="/products" className="btn-primary inline-block">
-          Retour aux produits
-        </Link>
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
+        <div className="text-center px-4">
+          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShoppingCart className="w-10 h-10 text-gray-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">Produit introuvable</h1>
+          <p className="text-gray-500 mb-8 max-w-md">Ce produit n'existe pas ou a été supprimé.</p>
+          <Link href="/products" className="inline-flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-primary-700 transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            Retour aux produits
+          </Link>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 md:pt-32 pb-12">
-        {/* Back Link */}
-        <Link
-          href="/products"
-          className="inline-flex items-center gap-2 text-gray-500 hover:text-primary-600 mb-6 text-sm font-medium transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Retour aux produits
-        </Link>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[60px] sm:pt-[72px] pb-16">
+        {/* Breadcrumb */}
+        <nav className="mb-4">
+          <Link
+            href="/products"
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-primary-600 text-sm font-medium transition-colors group"
+          >
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            Retour aux produits
+          </Link>
+        </nav>
 
-        {/* Product Details Card */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-2">
-            {/* Image Gallery */}
-            <div className="p-4 md:p-6 lg:p-8">
-              {/* Main Image */}
-              <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 mb-4">
-                <Image
-                  src={allImages[selectedImageIndex] || product.image || '/placeholder.png'}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  priority
-                />
-                {/* Navigation Arrows */}
-                {allImages.length > 1 && (
-                  <>
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all"
-                    >
-                      <ChevronLeft className="h-5 w-5 text-gray-700" />
-                    </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all"
-                    >
-                      <ChevronRight className="h-5 w-5 text-gray-700" />
-                    </button>
-                  </>
-                )}
-                {/* Image Counter */}
-                {allImages.length > 1 && (
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1 rounded-full">
-                    {selectedImageIndex + 1} / {allImages.length}
-                  </div>
-                )}
-              </div>
+        {/* Product Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+          
+          {/* LEFT: Image Gallery */}
+          <div className="space-y-4">
+            {/* Main Image Container */}
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-white shadow-sm border border-gray-100">
+              <Image
+                src={displayImages[selectedImageIndex]}
+                alt={product.name}
+                fill
+                className="object-contain p-4 transition-transform duration-300"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
+              />
               
-              {/* Thumbnail Gallery */}
-              {allImages.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  {allImages.map((img, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImageIndex(index)}
-                      className={`relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
-                        index === selectedImageIndex ? 'border-primary-600 ring-2 ring-primary-200' : 'border-transparent hover:border-gray-300'
-                      }`}
-                    >
-                      <Image src={img} alt={`${product.name} ${index + 1}`} fill className="object-cover" sizes="80px" />
-                    </button>
-                  ))}
+              {/* Discount Badge */}
+              {discountPercent > 0 && (
+                <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-lg">
+                  -{discountPercent}%
+                </div>
+              )}
+              
+              {/* Navigation Arrows */}
+              {displayImages.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white hover:bg-gray-50 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
+                  >
+                    <ChevronLeft className="h-5 w-5 text-gray-700" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white hover:bg-gray-50 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
+                  >
+                    <ChevronRight className="h-5 w-5 text-gray-700" />
+                  </button>
+                </>
+              )}
+
+              {/* Image Counter Badge */}
+              {displayImages.length > 1 && (
+                <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full">
+                  {selectedImageIndex + 1} / {displayImages.length}
+                </div>
+              )}
+            </div>
+            
+            {/* Thumbnail Strip */}
+            {displayImages.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {displayImages.map((img, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-white border-2 transition-all duration-200 ${
+                      index === selectedImageIndex 
+                        ? 'border-primary-600 shadow-lg shadow-primary-600/20 scale-105' 
+                        : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                    }`}
+                  >
+                    <Image 
+                      src={img} 
+                      alt={`${product.name} - Image ${index + 1}`} 
+                      fill 
+                      className="object-contain p-1" 
+                      sizes="80px" 
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT: Product Info */}
+          <div className="lg:py-4">
+            {/* Category */}
+            {product.product_type?.name && (
+              <Link 
+                href={`/products?category=${product.product_type_id}`}
+                className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-full mb-4 transition-colors"
+              >
+                {product.product_type.name}
+              </Link>
+            )}
+            
+            {/* Title */}
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+              {product.name}
+            </h1>
+            
+            {/* Price Section */}
+            <div className="flex items-end gap-3 mb-6">
+              <span className="text-3xl sm:text-4xl font-bold text-primary-600">
+                {product.price.toFixed(2)} <span className="text-xl">DT</span>
+              </span>
+              {product.original_price && product.original_price > product.price && (
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg text-gray-400 line-through">
+                    {product.original_price.toFixed(2)} DT
+                  </span>
+                  <span className="text-sm font-semibold text-red-500 bg-red-50 px-2 py-0.5 rounded">
+                    Économisez {(product.original_price - product.price).toFixed(2)} DT
+                  </span>
                 </div>
               )}
             </div>
 
-            {/* Product Info */}
-            <div className="p-6 md:p-8 lg:p-10 lg:border-l border-gray-100">
-              {/* Category Badge */}
-              {product.product_type?.name && (
-                <span className="inline-block px-3 py-1 text-xs font-medium text-primary-700 bg-primary-50 rounded-full mb-4">
-                  {product.product_type.name}
-                </span>
-              )}
-              
-              {/* Title */}
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-                {product.name}
-              </h1>
-              
-              {/* Price */}
-              <div className="flex items-baseline gap-3 mb-6">
-                <span className="text-3xl font-bold text-primary-600">
-                  {product.price.toFixed(2)} DT
-                </span>
-                {product.original_price && product.original_price > product.price && (
-                  <span className="text-lg text-gray-400 line-through">
-                    {product.original_price.toFixed(2)} DT
+            {/* Stock Status */}
+            <div className="mb-6">
+              {product.stock > 0 ? (
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-50 border border-green-200">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-700">
+                    En stock • {product.stock} disponible{product.stock > 1 ? 's' : ''}
                   </span>
-                )}
-              </div>
-
-              {/* Description */}
-              {product.description && (
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  {product.description}
-                </p>
-              )}
-
-              {/* Stock Status */}
-              <div className="mb-6">
-                {product.stock > 0 ? (
-                  <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-green-50 text-green-700">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    En stock ({product.stock} disponibles)
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-red-50 text-red-700">
-                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                    Rupture de stock
-                  </span>
-                )}
-              </div>
-
-              {/* Dynamic Product Options */}
-              {formFields.length > 0 && (
-                <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                  <DynamicProductForm
-                    fields={formFields}
-                    values={productOptions}
-                    onChange={handleOptionChange}
-                    errors={optionErrors}
-                  />
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-200">
+                  <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                  <span className="text-sm font-medium text-red-700">Rupture de stock</span>
                 </div>
               )}
+            </div>
 
+            {/* Description */}
+            {product.description && (
+              <div className="mb-8">
+                <p className="text-gray-600 leading-relaxed text-base">
+                  {product.description}
+                </p>
+              </div>
+            )}
+
+            {/* Divider */}
+            <hr className="border-gray-100 mb-6" />
+
+            {/* Dynamic Product Options */}
+            {formFields.length > 0 && (
+              <div className="mb-6 p-5 bg-gray-50 rounded-2xl border border-gray-100">
+                <h3 className="text-sm font-semibold text-gray-700 mb-4">Options du produit</h3>
+                <DynamicProductForm
+                  fields={formFields}
+                  values={productOptions}
+                  onChange={handleOptionChange}
+                  errors={optionErrors}
+                />
+              </div>
+            )}
+
+            {/* Quantity & Add to Cart */}
+            <div className="space-y-4 mb-8">
               {/* Quantity Selector */}
-              <div className="flex items-center gap-4 mb-6">
-                <span className="text-gray-700 font-medium">Quantité:</span>
-                <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium text-gray-700">Quantité:</span>
+                <div className="flex items-center bg-gray-100 rounded-xl overflow-hidden">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="p-3 hover:bg-gray-100 transition-colors rounded-l-xl"
+                    className="w-12 h-12 flex items-center justify-center hover:bg-gray-200 transition-colors disabled:opacity-40"
                     disabled={quantity <= 1}
                   >
                     <Minus className="h-4 w-4" />
                   </button>
-                  <span className="w-14 text-center font-semibold text-lg">{quantity}</span>
+                  <span className="w-16 text-center font-bold text-lg">{quantity}</span>
                   <button
                     onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                    className="p-3 hover:bg-gray-100 transition-colors rounded-r-xl"
+                    className="w-12 h-12 flex items-center justify-center hover:bg-gray-200 transition-colors disabled:opacity-40"
                     disabled={quantity >= product.stock}
                   >
                     <Plus className="h-4 w-4" />
@@ -293,31 +367,42 @@ export default function ProductDetailPage() {
               <button
                 onClick={handleAddToCart}
                 disabled={isAddToCartDisabled}
-                className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl flex items-center justify-center gap-3 mb-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary-600/20"
+                className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-white font-bold rounded-2xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-primary-600/25 hover:shadow-2xl hover:shadow-primary-600/30"
               >
                 <ShoppingCart className="h-5 w-5" />
-                Ajouter au panier
+                <span>Ajouter au panier</span>
+                <span className="text-primary-200">•</span>
+                <span>{(product.price * quantity).toFixed(2)} DT</span>
               </button>
+            </div>
 
-              {/* Trust Badges */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-gray-100">
-                <div className="flex items-center gap-3 text-gray-600">
-                  <div className="p-2 bg-primary-50 rounded-lg">
-                    <Truck className="h-5 w-5 text-primary-600" />
-                  </div>
-                  <span className="text-sm">Livraison rapide</span>
+            {/* Trust Features */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Truck className="h-5 w-5 text-primary-600" />
                 </div>
-                <div className="flex items-center gap-3 text-gray-600">
-                  <div className="p-2 bg-primary-50 rounded-lg">
-                    <CreditCard className="h-5 w-5 text-primary-600" />
-                  </div>
-                  <span className="text-sm">Paiement à la livraison</span>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Livraison rapide</p>
+                  <p className="text-xs text-gray-500">Partout en Tunisie</p>
                 </div>
-                <div className="flex items-center gap-3 text-gray-600">
-                  <div className="p-2 bg-primary-50 rounded-lg">
-                    <Shield className="h-5 w-5 text-primary-600" />
-                  </div>
-                  <span className="text-sm">Produit garanti</span>
+              </div>
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <CreditCard className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Paiement à la livraison</p>
+                  <p className="text-xs text-gray-500">Payez à la réception</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Shield className="h-5 w-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Garantie qualité</p>
+                  <p className="text-xs text-gray-500">Produit authentique</p>
                 </div>
               </div>
             </div>

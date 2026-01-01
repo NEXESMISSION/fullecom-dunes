@@ -65,21 +65,22 @@ export default function ProductSlider({
   if (products.length === 0) return null
 
   return (
-    <section className={`py-6 sm:py-8 ${backgroundColor}`}>
-      <div className="max-w-7xl mx-auto px-8">
-        {/* Mobile: Top Banner Image */}
-        {topImage && (
-          <div className="md:hidden mb-3 overflow-hidden">
+    <section className={`py-6 sm:py-8 ${backgroundColor} animate-fade-in-up`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        {/* Mobile: Top Banner Image - sideImage or topImage shown on top */}
+        {(topImage || sideImage) && (
+          <div className="md:hidden mb-4 rounded-xl overflow-hidden shadow-sm">
             <img 
-              src={topImage} 
+              src={topImage || sideImage} 
               alt={title}
-              className="w-full h-20 object-cover"
+              className="w-full h-28 object-cover"
+              loading="lazy"
             />
           </div>
         )}
         
         {/* Title and arrows - always above products */}
-        <div className="flex items-center justify-between mb-3 px-2">
+        <div className="flex items-center justify-between mb-3 px-1 sm:px-2">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-gray-900">{title}</h2>
             {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
@@ -116,14 +117,16 @@ export default function ProductSlider({
 
         {/* Layout with optional side image */}
         <div className="flex gap-3 items-stretch">
-          {/* Desktop: Side Image - Wider */}
+          {/* Side Image - Desktop: tall, Mobile: small square if no topImage */}
+          {/* Desktop side image only - mobile shows on top */}
           {sideImage && (
             <div className="hidden md:flex flex-shrink-0 w-56 lg:w-64 xl:w-72">
-              <div className="w-full overflow-hidden bg-gray-100 relative">
+              <div className="w-full overflow-hidden bg-gray-100 relative rounded-lg">
                 <img 
                   src={sideImage} 
                   alt={title}
                   className="w-full h-full object-cover absolute inset-0"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-4 text-white">

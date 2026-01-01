@@ -11,17 +11,14 @@ const NAV_GROUPS = [
     items: [
       { href: '/store-admin-panel/orders', label: 'Commandes', icon: '📦' },
       { href: '/store-admin-panel/products', label: 'Produits', icon: '🛍️' },
-      { href: '/store-admin-panel/categories', label: 'Catégories', icon: '📋' },
-      { href: '/store-admin-panel/product-types', label: 'Types de produits', icon: '🏷️' },
+      { href: '/store-admin-panel/product-types', label: 'Catégories', icon: '📂' },
     ]
   },
   {
     title: 'Page d\'accueil',
     items: [
       { href: '/store-admin-panel/sections', label: 'Sections Produits', icon: '📑' },
-      { href: '/store-admin-panel/banners', label: 'Bannières', icon: '🖼️' },
-      { href: '/store-admin-panel/promo-images', label: 'Images Promo', icon: '🎯' },
-      { href: '/store-admin-panel/landing', label: 'Paramètres', icon: '⚙️' },
+      { href: '/store-admin-panel/banners', label: 'Bannières Carousel', icon: '🖼️' },
     ]
   },
 ]
